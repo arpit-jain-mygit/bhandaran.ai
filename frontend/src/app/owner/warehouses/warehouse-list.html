@@ -1,0 +1,32 @@
+<!-- My godowns: each listing, its status, and what it still needs. -->
+<header class="head">
+  <h1>My godowns</h1>
+  <a class="button" routerLink="/owner/warehouses/new">Add a godown</a>
+</header>
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Loading your godowns" /> Loading…</p>
+}
+@if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+}
+@if (!loading() && !error() && rows().length === 0) {
+  <p class="muted">You have no godowns yet. Add one to start listing your space.</p>
+}
+
+<div class="cards">
+  @for (warehouse of rows(); track warehouse.id) {
+    <a class="card" [routerLink]="['/owner/warehouses', warehouse.id]">
+      <h2>{{ warehouse.name }}</h2>
+      <p class="muted small">
+        {{ warehouse.city_name }} · {{ warehouse.capacity }} {{ warehouse.unit_name }}
+      </p>
+      <p class="status" [class.review]="warehouse.status === 'PENDING_REVIEW'">
+        {{ statusLabel(warehouse) }}
+      </p>
+      @if (warehouse.status === 'DRAFT' && warehouse.missing.length) {
+        <p class="small">Still needed: {{ warehouse.missing.join(', ') }}</p>
+      }
+    </a>
+  }
+</div>

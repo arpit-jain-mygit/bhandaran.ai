@@ -33,6 +33,26 @@ export const routes: Routes = [
     loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
   },
 
+  // "/owner/warehouses" - the owner's godown listings (M5).
+  {
+    path: 'owner/warehouses',
+    title: 'My godowns - bhandaran.ai',
+    canActivate: [roleGuard('OWNER')],
+    loadComponent: () => import('./owner/warehouses/warehouse-list').then((m) => m.WarehouseList),
+  },
+  {
+    path: 'owner/warehouses/new',
+    title: 'Add a godown - bhandaran.ai',
+    canActivate: [roleGuard('OWNER')],
+    loadComponent: () => import('./owner/warehouses/warehouse-form').then((m) => m.WarehouseForm),
+  },
+  {
+    path: 'owner/warehouses/:id',
+    title: 'Edit godown - bhandaran.ai',
+    canActivate: [roleGuard('OWNER')],
+    loadComponent: () => import('./owner/warehouses/warehouse-form').then((m) => m.WarehouseForm),
+  },
+
   // "/renter" - renter's main screen, renters only (M3).
   {
     path: 'renter',

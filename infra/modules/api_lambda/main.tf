@@ -86,6 +86,22 @@ data "aws_iam_policy_document" "ses" {
   }
 }
 
+# Photos: presigned upload and view links are signed with this role,
+# so the role itself needs these S3 actions on the bucket.
+data "aws_iam_policy_document" "photos" {
+  statement {
+    actions   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
+    resources = ["${var.photo_bucket_arn}/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "photos" {
+  count  = var.photo_bucket_arn == null ? 0 : 1
+  name   = "photos-objects"
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.photos.json
+}
+
 # Only created when an SES identity is given.
 resource "aws_iam_role_policy" "ses" {
   count  = var.ses_identity_arn == null ? 0 : 1

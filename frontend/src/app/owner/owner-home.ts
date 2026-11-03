@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { apiErrorMessage } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
@@ -12,7 +13,7 @@ import { ProfileService } from '../core/profile.service';
 
 @Component({
   selector: 'app-owner-home',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './owner-home.html',
   styleUrl: './owner-home.scss',
 })

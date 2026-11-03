@@ -1,6 +1,12 @@
 <!-- Owner's main screen: welcome, invite renters, and a placeholder until listings arrive. -->
 <h1>Namaste, {{ auth.user()?.name || 'owner' }}</h1>
-<p class="muted">Your godown listings and bookings will appear here soon.</p>
+<p class="muted">Your bookings will appear here soon.</p>
+
+<section class="card">
+  <h2>My godowns</h2>
+  <p class="muted small">Describe your storage space, add photos, and send it for review.</p>
+  <a class="button" routerLink="/owner/warehouses">Manage godowns</a>
+</section>
 
 <section class="card">
   <h2>Invite a renter</h2>

@@ -51,6 +51,14 @@ variable "warmup_schedule" {
   default     = "cron(0/5 0-17 * * ? *)"
 }
 
+# S3 bucket for warehouse photos. The function may upload, view and delete
+# photos there. null = no photo permission.
+variable "photo_bucket_arn" {
+  description = "ARN of the photos bucket, or null"
+  type        = string
+  default     = null
+}
+
 # SES configuration set the function may send email with (bounce reports).
 variable "ses_configuration_set_arn" {
   description = "ARN of the SES configuration set the API sends with, or null"

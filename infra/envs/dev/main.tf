@@ -36,7 +36,7 @@ module "photos" {
 
   bucket_name          = "${local.name_prefix}-photos-${data.aws_caller_identity.current.account_id}"
   force_destroy        = true
-  cors_allowed_origins = var.photo_cors_origins
+  cors_allowed_origins = concat(var.photo_cors_origins, [module.web.url])
 }
 
 # Email when DSQL usage in one day is far above normal.
@@ -78,6 +78,7 @@ module "api" {
   dsql_cluster_arn          = module.dsql.arn
   ses_identity_arn          = module.ses.identity_arn
   ses_configuration_set_arn = local.ses_configuration_set_arn
+  photo_bucket_arn          = module.photos.bucket_arn
 
   environment = {
     DB_MODE        = "dsql"
@@ -90,6 +91,7 @@ module "api" {
     COOKIE_SECURE          = "true"
     MAIL_FROM              = var.mail_from
     MAIL_CONFIGURATION_SET = local.mail_configuration_set
+    PHOTO_BUCKET           = module.photos.bucket_name
   }
 }
 

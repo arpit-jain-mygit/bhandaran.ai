@@ -80,3 +80,14 @@ button {
     border: 1px solid var(--good);
   }
 }
+
+.button {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}

@@ -1,0 +1,180 @@
+<!-- Add or edit a godown: details, stock types, photos, then submit. -->
+<p><a routerLink="/owner/warehouses">← My godowns</a></p>
+<h1>{{ id ? 'Edit godown' : 'Add a godown' }}</h1>
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Loading" /> Loading…</p>
+} @else {
+  @if (readOnly()) {
+    <p class="msg review">This listing is waiting for review, so it can't be changed.</p>
+  }
+
+  <form class="card" (ngSubmit)="save()">
+    <label for="name">Godown name</label>
+    <input
+      id="name"
+      name="name"
+      required
+      maxlength="100"
+      [disabled]="readOnly()"
+      [(ngModel)]="name"
+    />
+
+    <label for="address">Address</label>
+    <input
+      id="address"
+      name="address"
+      required
+      maxlength="300"
+      [disabled]="readOnly()"
+      [(ngModel)]="address"
+    />
+
+    <div class="row">
+      <div>
+        <label for="city">City or town</label>
+        <select id="city" name="city" required [disabled]="readOnly()" [(ngModel)]="cityId">
+          <option value="" disabled>Pick a city</option>
+          @for (city of cities; track city.id) {
+            <option [value]="city.id">{{ city.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label for="pincode">Pincode</label>
+        <input
+          id="pincode"
+          name="pincode"
+          inputmode="numeric"
+          maxlength="6"
+          required
+          [disabled]="readOnly()"
+          [(ngModel)]="pincode"
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="capacity">Total capacity</label>
+        <input
+          id="capacity"
+          name="capacity"
+          type="number"
+          min="1"
+          required
+          [disabled]="readOnly()"
+          [(ngModel)]="capacity"
+        />
+      </div>
+      <div>
+        <label for="unit">Unit</label>
+        <select id="unit" name="unit" required [disabled]="readOnly()" [(ngModel)]="unitId">
+          <option value="" disabled>Pick a unit</option>
+          @for (unit of units; track unit.id) {
+            <option [value]="unit.id">{{ unit.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <label for="storage">Storage type</label>
+    <select
+      id="storage"
+      name="storage"
+      required
+      [disabled]="readOnly()"
+      [(ngModel)]="storageTypeId"
+    >
+      <option value="" disabled>Pick a storage type</option>
+      @for (storage of storageTypes; track storage.id) {
+        <option [value]="storage.id">{{ storage.name }}</option>
+      }
+    </select>
+
+    <fieldset [disabled]="readOnly()">
+      <legend>Stock types you accept</legend>
+      @for (stock of stockTypes; track stock.id) {
+        <label class="check">
+          <input
+            type="checkbox"
+            [name]="'stock-' + stock.id"
+            [(ngModel)]="stockChecked[stock.id]"
+          />
+          {{ stock.name }}
+        </label>
+      }
+    </fieldset>
+
+    <label for="price">Price per unit per month (₹)</label>
+    <input
+      id="price"
+      name="price"
+      inputmode="decimal"
+      required
+      [disabled]="readOnly()"
+      [(ngModel)]="price"
+    />
+
+    @if (!readOnly()) {
+      <button type="submit" [disabled]="busy()">Save draft</button>
+    }
+  </form>
+
+  @if (id) {
+    <section class="card">
+      <h2>Photos</h2>
+      <p class="muted small">JPG, PNG or WebP, up to 5 MB each. Add at least one.</p>
+
+      <div class="photos">
+        @for (photo of warehouse()?.photos ?? []; track photo.id) {
+          <figure>
+            @if (photo.view_url) {
+              <img [src]="photo.view_url" alt="Godown photo" />
+            } @else {
+              <span class="pending">Uploading…</span>
+            }
+            @if (!readOnly()) {
+              <button type="button" class="link" (click)="removePhoto(photo.id)">Remove</button>
+            }
+          </figure>
+        }
+      </div>
+
+      @if (!readOnly()) {
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          [disabled]="busy()"
+          (change)="addPhoto($event)"
+        />
+      }
+    </section>
+
+    <section class="card">
+      <h2>Submit for review</h2>
+      @if (warehouse()?.missing?.length) {
+        <p class="muted small">Still needed: {{ warehouse()?.missing?.join(', ') }}</p>
+      }
+      @if (!readOnly()) {
+        <button
+          type="button"
+          [disabled]="busy() || (warehouse()?.missing?.length ?? 1) > 0"
+          (click)="submit()"
+        >
+          Submit for review
+        </button>
+      }
+    </section>
+  }
+
+  @if (busy()) {
+    <p class="loading"><app-grain-loader [size]="22" label="Working" /> Working…</p>
+  }
+  @if (notice()) {
+    <p class="msg notice" role="status">{{ notice() }}</p>
+  }
+  @if (error()) {
+    <p class="msg error" role="alert">{{ error() }}</p>
+  }
+}
