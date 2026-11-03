@@ -5,6 +5,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { FindSpace } from './find-space';
 
@@ -22,7 +23,7 @@ describe('FindSpace', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FindSpace],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
   });

@@ -4,10 +4,11 @@
 // items appear. Location is picked top-down:
 //   State -> District -> City / Town
 // Choosing a level loads the next one and resets everything below.
-// The actual search arrives in M7.
+// "Search" (M7) opens /search with the choices in the URL.
 // ---------------------------------------------------------------
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Observable, finalize, forkJoin } from 'rxjs';
 
 import { apiErrorMessage } from '../../core/api-error';
@@ -22,6 +23,7 @@ import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 })
 export class FindSpace implements OnInit {
   private readonly api = inject(MasterDataService);
+  private readonly router = inject(Router);
 
   // Dropdown options.
   protected readonly states = signal<LookupItem[]>([]);
@@ -40,6 +42,9 @@ export class FindSpace implements OnInit {
   protected cityId = '';
   protected storageTypeId = '';
   protected stockTypeId = '';
+  protected pincode = '';
+  protected maxPrice = '';
+  protected minCapacity = '';
 
   ngOnInit(): void {
     // Load the three independent lists in parallel.
@@ -57,6 +62,22 @@ export class FindSpace implements OnInit {
       },
       error: (error) => this.error.set(apiErrorMessage(error)),
     });
+  }
+
+  /** Open the results page; only the choices made go into the URL. */
+  protected search(): void {
+    const all: Record<string, string> = {
+      state_id: this.stateId,
+      district_id: this.districtId,
+      city_id: this.cityId,
+      storage_type_id: this.storageTypeId,
+      stock_type_id: this.stockTypeId,
+      pincode: this.pincode.trim(),
+      max_price: String(this.maxPrice ?? '').trim(),
+      min_capacity: String(this.minCapacity ?? '').trim(),
+    };
+    const queryParams = Object.fromEntries(Object.entries(all).filter(([, value]) => value));
+    this.router.navigate(['/search'], { queryParams });
   }
 
   /** New state picked: reset district + city, load the state's districts. */

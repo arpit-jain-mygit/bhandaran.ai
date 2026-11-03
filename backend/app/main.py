@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.api import admin_warehouse, auth, health, master, profile, settings, warehouse
+from app.api import admin_warehouse, auth, health, master, profile, search, settings, warehouse
 from app.config import get_settings
 
 app = FastAPI(title="bhandaran.ai API", version=__version__)
@@ -28,3 +28,4 @@ app.include_router(settings.router)
 app.include_router(profile.router)
 app.include_router(warehouse.router)
 app.include_router(admin_warehouse.router)
+app.include_router(search.router)

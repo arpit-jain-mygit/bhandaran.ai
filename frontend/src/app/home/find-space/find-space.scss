@@ -36,7 +36,8 @@ label {
   color: var(--muted);
 }
 
-select {
+select,
+input {
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: 8px;

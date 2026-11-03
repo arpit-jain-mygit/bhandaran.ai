@@ -1,4 +1,4 @@
-<!-- Find space: dropdowns filled from master data (search comes in M7). -->
+<!-- Find space: choose a place and filters, then Search (M7). -->
 <section class="card">
   <div class="title">
     <h2>Find storage space</h2>
@@ -11,7 +11,7 @@
     <p class="error" role="alert">{{ error() }}</p>
   }
 
-  <form class="grid">
+  <form class="grid" (ngSubmit)="search()">
     <label>
       State
       <select name="state" [ngModel]="stateId" (ngModelChange)="onStateChange($event)">
@@ -67,8 +67,27 @@
       </select>
     </label>
 
-    <button type="button" disabled title="Search arrives in milestone M7">
-      Search (coming soon)
-    </button>
+    <label>
+      Pincode
+      <input
+        name="pincode"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="Any"
+        [(ngModel)]="pincode"
+      />
+    </label>
+
+    <label>
+      Max price per unit / month (₹)
+      <input name="maxPrice" type="number" min="0" placeholder="Any" [(ngModel)]="maxPrice" />
+    </label>
+
+    <label>
+      Space needed (units)
+      <input name="minCapacity" type="number" min="1" placeholder="Any" [(ngModel)]="minCapacity" />
+    </label>
+
+    <button type="submit">Search</button>
   </form>
 </section>

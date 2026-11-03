@@ -1,0 +1,36 @@
+<!-- Search results: approved godowns, cheapest first. -->
+<p><a routerLink="/">← Change search</a></p>
+<h1>Storage space</h1>
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Searching" /> Searching…</p>
+} @else if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+} @else if (rows().length === 0) {
+  <p class="muted">No godowns match yet. Try a wider area or fewer filters.</p>
+} @else {
+  <p class="muted">{{ rows().length }} {{ rows().length === 1 ? 'godown' : 'godowns' }} found</p>
+}
+
+<div class="results">
+  @for (row of rows(); track row.id) {
+    <a class="card" [routerLink]="['/godowns', row.id]">
+      @if (row.photo_url) {
+        <img [src]="row.photo_url" alt="Photo of {{ row.name }}" />
+      } @else {
+        <div class="no-photo" aria-hidden="true"></div>
+      }
+      <div class="body">
+        <h2>{{ row.name }}</h2>
+        <p class="muted small">{{ row.city_name }}, {{ row.district_name }} · {{ row.pincode }}</p>
+        <p class="small">{{ row.storage_type_name }} · {{ row.stock_types.join(', ') }}</p>
+        <p class="facts">
+          <span
+            ><b>₹{{ row.price_per_unit_month }}</b> per {{ row.unit_name }} / month</span
+          >
+          <span>{{ row.available_capacity }} {{ row.unit_name }} free</span>
+        </p>
+      </div>
+    </a>
+  }
+</div>

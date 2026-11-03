@@ -10,6 +10,20 @@ export const routes: Routes = [
   // "/" - system status + "Find space" dropdowns.
   { path: '', component: Home, title: 'bhandaran.ai' },
 
+  // "/search" - approved godowns matching the Home filters (M7). Public.
+  {
+    path: 'search',
+    title: 'Search - bhandaran.ai',
+    loadComponent: () => import('./search/search-results').then((m) => m.SearchResults),
+  },
+
+  // "/godowns/:id" - one approved godown (M7). Public.
+  {
+    path: 'godowns/:id',
+    title: 'Godown - bhandaran.ai',
+    loadComponent: () => import('./search/godown-detail').then((m) => m.GodownDetail),
+  },
+
   // "/login" - email OTP login and sign-up (M3).
   {
     path: 'login',

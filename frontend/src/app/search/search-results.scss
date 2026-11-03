@@ -1,0 +1,79 @@
+// Search results. Colours come from styles.scss tokens.
+a {
+  color: var(--accent);
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 0.25rem;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+
+  img,
+  .no-photo {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  .no-photo {
+    background: color-mix(in srgb, var(--grain-wheat) 18%, var(--surface));
+  }
+}
+
+.body {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.facts {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+}
+
+.msg {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--bad);
+  color: var(--bad);
+}
