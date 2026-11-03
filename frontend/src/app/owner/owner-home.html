@@ -1,27 +1,3 @@
-<!-- Owner's main screen: welcome + the booking rules set for everyone. -->
+<!-- Owner's main screen: a welcome until listings and bookings arrive. -->
 <h1>Namaste, {{ auth.user()?.name || 'owner' }}</h1>
 <p class="muted">Your godown listings and bookings will appear here soon.</p>
-
-<h2>Booking rules</h2>
-<p class="muted">
-  Set by bhandaran.ai for all godowns. These apply to every booking, so they can't be changed here.
-</p>
-
-@if (loading()) {
-  <p class="loading"><app-grain-loader [size]="28" label="Loading the rules" /> Loading…</p>
-}
-@if (error()) {
-  <p class="msg error" role="alert">{{ error() }}</p>
-}
-
-<div class="cards">
-  @for (rule of rules(); track rule.key) {
-    <section class="card">
-      <h3>{{ rule.label }}</h3>
-      <p class="muted small">{{ rule.description }}</p>
-      <p class="now">
-        Now: <b>{{ display(rule.value) }}</b>
-      </p>
-    </section>
-  }
-</div>

@@ -4,55 +4,6 @@ h1 {
   margin: 0 0 0.25rem;
 }
 
-h2 {
-  font-size: 1.1rem;
-  margin: 1.5rem 0 0.25rem;
-}
-
-h3 {
-  font-size: 1rem;
-  margin: 0;
-}
-
 .muted {
   color: var(--muted);
-}
-
-.small {
-  font-size: 0.9rem;
-}
-
-.loading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  color: var(--muted);
-}
-
-.msg {
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-
-  &.error {
-    color: var(--bad);
-    border: 1px solid var(--bad);
-  }
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.card {
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.now {
-  margin: 0.5rem 0 0;
 }
