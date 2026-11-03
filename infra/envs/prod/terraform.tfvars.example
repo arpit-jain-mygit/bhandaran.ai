@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) and fill in real values.
+alert_email              = "you@example.com"
+photo_cors_origins       = ["https://bhandaran.ai"]
+dsql_daily_dpu_threshold = 10000

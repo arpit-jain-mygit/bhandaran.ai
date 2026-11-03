@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) and fill in real values.
+state_bucket_name  = "bhandaran-tfstate-<ACCOUNT_ID>"
+alert_email        = "you@example.com"
+monthly_budget_usd = 10

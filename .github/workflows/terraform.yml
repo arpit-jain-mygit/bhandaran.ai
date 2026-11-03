@@ -1,0 +1,93 @@
+# ---------------------------------------------------------------
+# Terraform CI
+#   Pull request -> fmt check + validate (all stacks) + plan (dev)
+#   Manual run   -> apply one stack, from the main branch only
+#
+# AWS login uses GitHub OIDC (no stored keys). Set these GitHub repo
+# variables first (Settings -> Secrets and variables -> Actions):
+#   AWS_PLAN_ROLE_ARN, AWS_APPLY_ROLE_ARN, TF_STATE_BUCKET, ALERT_EMAIL
+# ---------------------------------------------------------------
+name: terraform
+
+on:
+  pull_request:
+    paths: ["infra/**", ".github/workflows/terraform.yml"]
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: "Stack to apply"
+        required: true
+        type: choice
+        options: [dev, shared]
+
+# id-token: write lets the job request an OIDC token from GitHub.
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-south-1
+  TF_IN_AUTOMATION: "true"
+  # Passed into Terraform as var.alert_email / var.state_bucket_name.
+  TF_VAR_alert_email: ${{ vars.ALERT_EMAIL }}
+  TF_VAR_state_bucket_name: ${{ vars.TF_STATE_BUCKET }}
+
+jobs:
+  # ---- 1. Format + validate every stack (no AWS access needed) ----
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Format check
+        run: terraform fmt -check -recursive infra
+
+      - name: Validate all stacks
+        run: |
+          for dir in infra/bootstrap infra/envs/shared infra/envs/dev infra/envs/prod; do
+            echo "::group::$dir"
+            terraform -chdir=$dir init -backend=false -input=false
+            terraform -chdir=$dir validate
+            echo "::endgroup::"
+          done
+
+  # ---- 2. Plan dev with the read-only role ----
+  plan-dev:
+    if: github.event_name == 'pull_request' && vars.AWS_PLAN_ROLE_ARN != ''
+    needs: validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/envs/dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+      - run: terraform plan -input=false -lock=false -no-color
+
+  # ---- 3. Apply (manual, main branch only, admin role) ----
+  apply:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/envs/${{ inputs.stack }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_APPLY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}"
+      - run: terraform apply -input=false -auto-approve

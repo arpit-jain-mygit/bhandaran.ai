@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------
+# Terraform: never commit downloaded plugins or state files.
+# State can contain secrets and lives in S3 (see infra/README.md).
+# ---------------------------------------------------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+
+# Real variable values and backend settings stay on your machine.
+# Copy the matching *.example file to create your own.
+*.tfvars
+!*.tfvars.example
+backend.hcl
+
+# ---------------------------------------------------------------
+# OS / editor noise
+# ---------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
