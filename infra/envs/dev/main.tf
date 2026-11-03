@@ -14,6 +14,10 @@ data "aws_caller_identity" "current" {}
 locals {
   env         = "dev"
   name_prefix = "bhandaran-${local.env}"
+
+  # SES configuration set that reports bounces and complaints (M3 bounce handling).
+  mail_configuration_set    = "${local.name_prefix}-mail"
+  ses_configuration_set_arn = "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:configuration-set/${local.mail_configuration_set}"
 }
 
 # Database. Deletion protection is OFF in dev so the cluster can be
@@ -70,9 +74,10 @@ module "ses" {
 module "api" {
   source = "../../modules/api_lambda"
 
-  name             = "${local.name_prefix}-api"
-  dsql_cluster_arn = module.dsql.arn
-  ses_identity_arn = module.ses.identity_arn
+  name                      = "${local.name_prefix}-api"
+  dsql_cluster_arn          = module.dsql.arn
+  ses_identity_arn          = module.ses.identity_arn
+  ses_configuration_set_arn = local.ses_configuration_set_arn
 
   environment = {
     DB_MODE        = "dsql"
@@ -81,10 +86,23 @@ module "api" {
     CORS_ORIGINS   = "[]"
     APP_SECRET_KEY = random_password.app_secret_key.result
     # Login codes are emailed through SES (SMS waits for DLT, M12).
-    OTP_DELIVERY  = "email"
-    COOKIE_SECURE = "true"
-    MAIL_FROM     = var.mail_from
+    OTP_DELIVERY           = "email"
+    COOKIE_SECURE          = "true"
+    MAIL_FROM              = var.mail_from
+    MAIL_CONFIGURATION_SET = local.mail_configuration_set
   }
+}
+
+# Bounce and complaint reports from SES -> SNS -> the API Lambda (bounce handling).
+module "ses_events" {
+  source = "../../modules/ses_events"
+
+  name                   = local.name_prefix
+  configuration_set_name = local.mail_configuration_set
+  region                 = var.region
+  account_id             = data.aws_caller_identity.current.account_id
+  api_function_arn       = module.api.function_arn
+  api_function_name      = module.api.function_name
 }
 
 # Angular build in S3 + CloudFront in front of both S3 and the API.

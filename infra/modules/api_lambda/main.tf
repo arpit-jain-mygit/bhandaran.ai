@@ -82,7 +82,7 @@ resource "aws_iam_role_policy" "dsql" {
 data "aws_iam_policy_document" "ses" {
   statement {
     actions   = ["ses:SendEmail"]
-    resources = [var.ses_identity_arn]
+    resources = compact([var.ses_identity_arn, var.ses_configuration_set_arn])
   }
 }
 

@@ -17,8 +17,10 @@ import logging
 from mangum import Mangum
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from app.db import get_engine
+from app.mail_events import is_ses_sns_event, record_mail_events
 from app.main import app
 
 logger = logging.getLogger(__name__)
@@ -39,8 +41,16 @@ def warm_up() -> dict:
         return {"warm": False}
 
 
+def handle_mail_events(event: dict) -> dict:
+    """SES bounce/complaint reports arrive by SNS: record the bad addresses."""
+    with Session(get_engine()) as session:
+        return {"suppressed": record_mail_events(session, event)}
+
+
 def handler(event, context):
-    """Lambda calls this for every event (HTTP request or warm-up ping)."""
+    """Lambda calls this for every event (HTTP request, warm-up ping or SNS report)."""
     if isinstance(event, dict) and event.get("warmup") is True:
         return warm_up()
+    if is_ses_sns_event(event):
+        return handle_mail_events(event)
     return asgi_handler(event, context)

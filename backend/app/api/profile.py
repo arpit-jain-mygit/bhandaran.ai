@@ -20,6 +20,7 @@ from app.auth import CurrentUser, normalize_email, require_owner
 from app.config import get_settings
 from app.db import get_session
 from app.email_sender import send_invitation
+from app.mail_events import is_suppressed
 from app.models import City, User, UserRole
 from app.schemas.profile import InviteRenter, ProfileIn, ProfileOut
 
@@ -93,6 +94,11 @@ def invite_renter(body: InviteRenter, owner: OwnerUser, session: DbSession):
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
     if session.scalar(select(User.id).where(User.email == email)):
         raise HTTPException(status.HTTP_409_CONFLICT, EMAIL_TAKEN)
+    if is_suppressed(session, email):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "This address can't receive our emails. Please use another address.",
+        )
 
     # Tell the renter first: if the email fails, no account is created.
     if get_settings().otp_delivery == "email":

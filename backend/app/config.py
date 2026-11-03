@@ -45,6 +45,13 @@ class Settings(BaseSettings):
     # Verified SES sender address for login emails (MAIL_FROM).
     mail_from: str = ""
 
+    # S3 bucket for warehouse photos (PHOTO_BUCKET). Empty = photos off.
+    photo_bucket: str = ""
+
+    # SES configuration set that reports bounces and complaints
+    # (MAIL_CONFIGURATION_SET). Empty = no reports.
+    mail_configuration_set: str = ""
+
     # Send the session cookie only over HTTPS. Set false for plain
     # http://localhost if your browser refuses the cookie.
     cookie_secure: bool = True

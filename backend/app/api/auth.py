@@ -35,6 +35,7 @@ from app.auth import (
 from app.config import get_settings
 from app.db import get_session
 from app.email_sender import send_login_code
+from app.mail_events import is_suppressed
 from app.models import OtpChallenge, User, UserRole
 from app.schemas.auth import (
     OtpRequest,
@@ -99,6 +100,11 @@ def deliver_code(email: str, code: str) -> str | None:
 def request_otp(body: OtpRequest, session: DbSession):
     email = email_or_422(body.email)
     now = datetime.now(UTC)
+    if is_suppressed(session, email):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "This address can't receive our emails. Please use another address.",
+        )
 
     # Limit: a few codes per email per hour (stops inbox bombing / guessing).
     recent = session.scalar(

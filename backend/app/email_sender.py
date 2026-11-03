@@ -21,11 +21,15 @@ def send_email(to_address: str, subject: str, body: str) -> None:
     """Send a plain-text email. Raises RuntimeError if SES refuses or is unreachable."""
     settings = get_settings()
     client = boto3.client("sesv2", region_name=settings.aws_region)
+    extra = {}
+    if settings.mail_configuration_set:
+        extra["ConfigurationSetName"] = settings.mail_configuration_set
     try:
         client.send_email(
             FromEmailAddress=settings.mail_from,
             Destination={"ToAddresses": [to_address]},
             Content={"Simple": {"Subject": {"Data": subject}, "Body": {"Text": {"Data": body}}}},
+            **extra,
         )
     except (ClientError, BotoCoreError) as error:
         # Log the reason for operators; never the code itself.
