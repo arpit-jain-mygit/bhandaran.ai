@@ -9,10 +9,11 @@
 module "github_oidc" {
   source = "../../modules/github_oidc"
 
-  name_prefix          = "bhandaran"
-  github_repo          = var.github_repo
-  state_bucket_arn     = "arn:aws:s3:::${var.state_bucket_name}"
-  create_oidc_provider = var.create_oidc_provider
+  name_prefix           = "bhandaran"
+  github_repo           = var.github_repo
+  github_subject_prefix = var.github_subject_prefix
+  state_bucket_arn      = "arn:aws:s3:::${var.state_bucket_name}"
+  create_oidc_provider  = var.create_oidc_provider
 }
 
 # Monthly budget for everything tagged project=bhandaran.

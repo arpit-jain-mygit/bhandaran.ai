@@ -43,3 +43,4 @@ Open http://localhost:4200 - the System status card should show **API ok** and *
 ## Plan
 
 - [MVP.md](MVP.md) - Release 1 milestones and status
+- [SETUP.md](SETUP.md) - rebuild everything in a new AWS account (human or AI agent runbook)

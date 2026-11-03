@@ -17,6 +17,11 @@ terraform {
   }
 }
 
+locals {
+  # e.g. "repo:owner/name" or "repo:owner@123/name@456"
+  subject_prefix = coalesce(var.github_subject_prefix, "repo:${var.github_repo}")
+}
+
 # Reuse the account's GitHub OIDC provider (created once, in "shared").
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
@@ -41,7 +46,7 @@ data "aws_iam_policy_document" "trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+      values   = ["${local.subject_prefix}:ref:refs/heads/main"]
     }
   }
 }

@@ -33,3 +33,11 @@ variable "github_repo" {
   type        = string
   default     = "arpit-jain-mygit/bhandaran.ai"
 }
+
+# GitHub OIDC subject prefix for this repo (immutable-subject format).
+# See modules/github_oidc/variables.tf for how to look it up.
+variable "github_subject_prefix" {
+  description = "Prefix of the GitHub OIDC sub claim"
+  type        = string
+  default     = "repo:arpit-jain-mygit@250862261/bhandaran.ai@1444180371"
+}

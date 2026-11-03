@@ -19,6 +19,11 @@ terraform {
 }
 
 locals {
+  # e.g. "repo:owner/name" or "repo:owner@123/name@456"
+  subject_prefix = coalesce(var.github_subject_prefix, "repo:${var.github_repo}")
+}
+
+locals {
   github_oidc_url = "https://token.actions.githubusercontent.com"
 }
 
@@ -67,8 +72,8 @@ data "aws_iam_policy_document" "plan_trust" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:${var.github_repo}:pull_request",
-        "repo:${var.github_repo}:ref:refs/heads/main",
+        "${local.subject_prefix}:pull_request",
+        "${local.subject_prefix}:ref:refs/heads/main",
       ]
     }
   }
@@ -93,7 +98,7 @@ data "aws_iam_policy_document" "apply_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+      values   = ["${local.subject_prefix}:ref:refs/heads/main"]
     }
   }
 }

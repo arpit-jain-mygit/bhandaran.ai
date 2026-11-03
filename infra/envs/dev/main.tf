@@ -79,9 +79,10 @@ module "web" {
 module "github_deploy" {
   source = "../../modules/github_deploy_role"
 
-  name                = "${local.name_prefix}-github-deploy"
-  github_repo         = var.github_repo
-  lambda_function_arn = module.api.function_arn
-  web_bucket_arn      = module.web.bucket_arn
-  distribution_arn    = module.web.distribution_arn
+  name                  = "${local.name_prefix}-github-deploy"
+  github_repo           = var.github_repo
+  github_subject_prefix = var.github_subject_prefix
+  lambda_function_arn   = module.api.function_arn
+  web_bucket_arn        = module.web.bucket_arn
+  distribution_arn      = module.web.distribution_arn
 }
