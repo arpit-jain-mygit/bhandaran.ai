@@ -1,0 +1,160 @@
+// Admin > Master data styles. Colours come from styles.scss tokens.
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+}
+
+// Shared input/button look.
+input,
+select {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // Text-style button for row actions.
+  &.link {
+    background: none;
+    border-color: transparent;
+    color: var(--accent);
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+.narrow {
+  width: 5.5rem;
+}
+
+// Admin key row.
+.key-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+
+  label {
+    font-weight: 600;
+  }
+}
+
+.hint,
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+// Tabs: wrap on small screens instead of scrolling the page.
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+
+  button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--muted);
+
+    &.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+  }
+}
+
+.msg {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+
+  &.error {
+    color: var(--bad);
+    border: 1px solid var(--bad);
+  }
+
+  &.notice {
+    color: var(--good);
+    border: 1px solid var(--good);
+  }
+}
+
+.state-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+// Card around the table; scrolls sideways on narrow phones only.
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+}
+
+.actions {
+  text-align: right;
+}
+
+// Disabled rows are faded.
+tr.inactive td:not(.actions) {
+  color: var(--muted);
+  text-decoration: line-through;
+}

@@ -18,6 +18,7 @@ from alembic.ddl.postgresql import PostgresqlImpl
 
 from app.config import get_settings
 from app.db import build_engine
+from app.models import Base
 
 
 # Tell Alembic to treat "auroradsql" like PostgreSQL, but without
@@ -32,9 +33,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Table definitions for "alembic revision --autogenerate".
-# Stays None until ORM models exist (M1 onwards).
-target_metadata = None
+# Table definitions, used by "alembic revision --autogenerate" to
+# suggest changes. Always review and split them: one DDL per file.
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

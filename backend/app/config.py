@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     # Browser origins allowed to call the API (the Angular dev server).
     cors_origins: list[str] = ["http://localhost:4200"]
 
+    # TEMPORARY (until M3 login): secret that admin write requests must
+    # send in the X-Admin-Key header. Empty = all admin writes refused.
+    admin_api_key: str = ""
+
 
 # lru_cache = read settings once, then reuse the same object everywhere.
 @lru_cache

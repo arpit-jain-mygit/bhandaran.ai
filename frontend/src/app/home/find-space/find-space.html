@@ -1,0 +1,54 @@
+<!-- Find space: dropdowns filled from master data (search comes in M7). -->
+<section class="card">
+  <h2>Find storage space</h2>
+
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+
+  <form class="grid">
+    <label>
+      State
+      <select name="state" [ngModel]="stateId" (ngModelChange)="onStateChange($event)">
+        <option value="">Select state</option>
+        @for (s of states(); track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      City
+      <select name="city" [(ngModel)]="cityId" [disabled]="!stateId">
+        <option value="">{{ stateId ? 'Select city' : 'Pick a state first' }}</option>
+        @for (c of cities(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Storage type
+      <select name="storageType" [(ngModel)]="storageTypeId">
+        <option value="">Any</option>
+        @for (t of storageTypes(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      What will you store?
+      <select name="stockType" [(ngModel)]="stockTypeId">
+        <option value="">Any</option>
+        @for (t of stockTypes(); track t.id) {
+          <option [value]="t.id">{{ t.name }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="button" disabled title="Search arrives in milestone M7">
+      Search (coming soon)
+    </button>
+  </form>
+</section>

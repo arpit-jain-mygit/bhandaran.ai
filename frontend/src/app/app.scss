@@ -1,8 +1,9 @@
 // Shell layout: full-width header, centred page content.
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 1rem;
+  gap: 0.5rem 1rem;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
@@ -11,6 +12,8 @@
 .brand {
   font-size: 1.25rem;
   font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
 }
 
 .dot {
@@ -26,4 +29,21 @@
   padding: 1.5rem 16px;
   max-width: 960px;
   margin: 0 auto;
+}
+
+// Navigation links, pushed to the right.
+.nav {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
+
+  a {
+    color: var(--muted);
+    text-decoration: none;
+
+    &.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+  }
 }

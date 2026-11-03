@@ -1,0 +1,165 @@
+<!-- Admin > Master data: key box, tabs, add form, table. -->
+<h1>Master data</h1>
+
+<!-- TEMPORARY admin key (until M3 login) -->
+<form class="key-box" (ngSubmit)="saveKey()">
+  <label for="admin-key">Admin key</label>
+  <input
+    id="admin-key"
+    name="adminKey"
+    type="password"
+    autocomplete="off"
+    placeholder="Needed to add or change items"
+    [(ngModel)]="keyInput"
+  />
+  <button type="submit">Save key</button>
+  <span class="hint">{{ adminKey.key() ? 'Key set' : 'No key - read only' }}</span>
+</form>
+
+<!-- Tabs -->
+<nav class="tabs" role="tablist">
+  @for (t of tabs; track t.kind) {
+    <button
+      type="button"
+      role="tab"
+      [class.active]="tab() === t.kind"
+      [attr.aria-selected]="tab() === t.kind"
+      (click)="selectTab(t.kind)"
+    >
+      {{ t.label }}
+    </button>
+  }
+</nav>
+
+<!-- Messages -->
+@if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p class="msg notice" role="status">{{ notice() }}</p>
+}
+
+@if (tab() === 'cities') {
+  <!-- ================= Cities tab ================= -->
+  <label class="state-picker">
+    State
+    <select name="state" [ngModel]="stateId()" (ngModelChange)="selectState($event)">
+      @for (s of states(); track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
+  </label>
+
+  <form class="add" (ngSubmit)="add()">
+    <input name="newName" placeholder="New city name" required [(ngModel)]="newName" />
+    <button type="submit" [disabled]="!newName.trim()">Add city</button>
+  </form>
+
+  <!-- Wrapper scrolls sideways on narrow phones; the page itself doesn't. -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of cities(); track c.id) {
+          <tr [class.inactive]="!c.is_active">
+            @if (editingId() === c.id) {
+              <td><input name="editName" [(ngModel)]="editName" /></td>
+              <td>{{ c.is_active ? 'Active' : 'Disabled' }}</td>
+              <td class="actions">
+                <button type="button" (click)="saveEdit(c.id)">Save</button>
+                <button type="button" class="link" (click)="cancelEdit()">Cancel</button>
+              </td>
+            } @else {
+              <td>{{ c.name }}</td>
+              <td>{{ c.is_active ? 'Active' : 'Disabled' }}</td>
+              <td class="actions">
+                <button type="button" class="link" (click)="startEdit(c)">Edit</button>
+                <button type="button" class="link" (click)="toggleActive(c)">
+                  {{ c.is_active ? 'Disable' : 'Enable' }}
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="muted">{{ loading() ? 'Loading…' : 'No cities yet.' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <!-- ================= Simple list tabs ================= -->
+  <form class="add" (ngSubmit)="add()">
+    <input name="newCode" placeholder="Code (e.g. GROUNDNUT)" required [(ngModel)]="newCode" />
+    <input name="newName" placeholder="Name" required [(ngModel)]="newName" />
+    <input
+      name="newSortOrder"
+      type="number"
+      min="0"
+      class="narrow"
+      title="Sort order (lower shows first)"
+      [(ngModel)]="newSortOrder"
+    />
+    <button type="submit" [disabled]="!newCode.trim() || !newName.trim()">Add</button>
+  </form>
+
+  <!-- Wrapper scrolls sideways on narrow phones; the page itself doesn't. -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Order</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.id) {
+          <tr [class.inactive]="!item.is_active">
+            <td class="code">{{ item.code }}</td>
+            @if (editingId() === item.id) {
+              <td><input name="editName" [(ngModel)]="editName" /></td>
+              <td>
+                <input
+                  name="editSortOrder"
+                  type="number"
+                  min="0"
+                  class="narrow"
+                  [(ngModel)]="editSortOrder"
+                />
+              </td>
+              <td>{{ item.is_active ? 'Active' : 'Disabled' }}</td>
+              <td class="actions">
+                <button type="button" (click)="saveEdit(item.id)">Save</button>
+                <button type="button" class="link" (click)="cancelEdit()">Cancel</button>
+              </td>
+            } @else {
+              <td>{{ item.name }}</td>
+              <td>{{ item.sort_order }}</td>
+              <td>{{ item.is_active ? 'Active' : 'Disabled' }}</td>
+              <td class="actions">
+                <button type="button" class="link" (click)="startEdit(item)">Edit</button>
+                <button type="button" class="link" (click)="toggleActive(item)">
+                  {{ item.is_active ? 'Disable' : 'Enable' }}
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="muted">{{ loading() ? 'Loading…' : 'Nothing here yet.' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

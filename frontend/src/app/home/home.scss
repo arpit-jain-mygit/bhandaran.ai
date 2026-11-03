@@ -1,4 +1,11 @@
-// Status card styles. Colours come from CSS variables in styles.scss.
+// Home page styles. Colours come from CSS variables in styles.scss.
+
+// Cards stacked with space between them.
+.stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
 .card {
   max-width: 420px;
   padding: 1.25rem 1.5rem;

@@ -190,7 +190,7 @@ terraform -chdir=infra/envs/dev init -input=false -reconfigure -backend-config=b
 terraform -chdir=infra/envs/dev apply -input=false
 ```
 
-This takes ~5-10 minutes (CloudFront is the slow part). About 34 resources are created.
+This takes ~5-10 minutes (CloudFront is the slow part). About 35 resources are created.
 
 **Check:**
 
@@ -317,7 +317,13 @@ curl -s -o /dev/null -w '%{http_code}\n' "$(terraform -chdir=infra/envs/dev outp
 
 Expected: `200` (Angular routes are served by CloudFront).
 
-Open the `web_url` in a browser: the **System status** card should show **API ok** and **Database ok (dsql)**.
+Open the `web_url` in a browser: the **System status** card should show **API ok** and **Database ok (dsql)**, and the **Find storage space** dropdowns should list states, storage types and stock types.
+
+Admin screens (`<web_url>/admin/master-data`) need the temporary admin key (until M3 login). Give it to the human - do not paste it into chat logs or commits:
+
+```bash
+terraform -chdir=infra/envs/dev output -raw admin_api_key
+```
 
 ## 10. Manual follow-ups
 
@@ -386,6 +392,8 @@ Lambda `python3.14` on `arm64` and CloudFront `PriceClass_200` work in all commo
 | `Invalid count argument` | A `count` depends on a value only known after apply | Use a plain boolean input (see `create_dpu_alarm` in `modules/cost_alarms`) |
 | `/api/health` returns `API not deployed yet` (503) | Placeholder Lambda code | Run step 8 |
 | `/api/health` shows `"database":"unreachable"` | Lambda can't reach DSQL, or migrations not run | Check the Lambda role has `dsql:DbConnectAdmin` on the cluster; run step 6 |
+| Dropdowns empty / `/api/master/...` errors | Migrations not run on the new cluster | Run step 6 |
+| Admin screen says "Admin key missing or wrong" | Key not entered or from the old account | Use the new `admin_api_key` output |
 | Lambda build: `No matching distribution found for psycopg-binary` | Missing Linux wheel tag | `build_lambda.sh` must pass both `manylinux2014_aarch64` and `manylinux_2_28_aarch64` |
 | Terraform `Error acquiring the state lock` | An interrupted run left `*.tflock` in the state bucket | Make sure no other run is active, then `terraform force-unlock <LOCK_ID>` |
 | Budget always $0 | Cost tag not activated | Step 10 |

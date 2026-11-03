@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------
-// Home page (M0): shows whether the API and database are reachable.
+// Home page: system status card (M0) + "Find space" dropdowns (M1).
 // Later milestones replace this with real owner / renter screens.
 // ---------------------------------------------------------------
 import { Component, inject } from '@angular/core';
@@ -7,12 +7,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of, startWith } from 'rxjs';
 
 import { Health, HealthService } from '../core/health.service';
+import { FindSpace } from './find-space/find-space';
 
 // The three states the page can be in.
 type HealthState = { kind: 'loading' } | { kind: 'loaded'; health: Health } | { kind: 'error' };
 
 @Component({
   selector: 'app-home',
+  imports: [FindSpace],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

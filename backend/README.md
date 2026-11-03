@@ -8,6 +8,7 @@
 - [Database modes](#database-modes)
 - [Migrations](#migrations)
 - [DSQL rules for migrations](#dsql-rules-for-migrations)
+- [Master data API](#master-data-api)
 - [Checks](#checks)
 - [Lambda build](#lambda-build)
 
@@ -19,11 +20,15 @@ backend/
 │   ├── main.py          FastAPI app, CORS, router registration
 │   ├── config.py        settings from env vars / .env
 │   ├── db.py            engine for local Postgres or Aurora DSQL
+│   ├── auth.py          temporary admin-key check (until M3)
+│   ├── models/          SQLAlchemy tables (base mixins, master data)
+│   ├── schemas/         request/response shapes (Pydantic)
 │   ├── api/health.py    GET /api/health
+│   ├── api/master.py    master-data API (M1)
 │   └── lambda_handler.py  AWS Lambda entry (Mangum)
 ├── scripts/build_lambda.sh  builds dist/lambda.zip (Linux arm64)
 ├── migrations/          Alembic (env.py handles DSQL rules)
-├── tests/               pytest (no DB needed - fakes)
+├── tests/               pytest (real Postgres test DB, rebuilt each run)
 └── pyproject.toml       dependencies, ruff, pytest config
 ```
 
@@ -50,6 +55,12 @@ cp .env.example .env
 ```bash
 createdb bhandaran
 ```
+
+```bash
+createdb bhandaran_test
+```
+
+`bhandaran_test` is wiped and rebuilt from the migrations on every test run (tests refuse any database not named `*_test`).
 
 ## Run
 
@@ -101,6 +112,21 @@ Aurora DSQL is stricter than PostgreSQL. `migrations/env.py` runs in AUTOCOMMIT 
 - No triggers, PL/pgSQL, extensions (PostGIS), temp tables, `TRUNCATE`, or array columns.
 - Data changes (DML) go in a **separate** migration from schema changes (DDL).
 - At most 3,000 rows changed per transaction - batch large data migrations.
+
+## Master data API
+
+| Method | Path | Who |
+|---|---|---|
+| GET | `/api/master/{kind}?include_inactive=false` | anyone |
+| POST | `/api/master/{kind}` `{code, name, sort_order}` | admin |
+| PATCH | `/api/master/{kind}/{id}` `{name?, sort_order?, is_active?}` | admin |
+| GET | `/api/master/cities?state_id=&include_inactive=false` | anyone |
+| POST | `/api/master/cities` `{state_id, name}` | admin |
+| PATCH | `/api/master/cities/{id}` `{name?, is_active?}` | admin |
+
+`kind` = `stock-types`, `storage-types`, `units`, `states`. Nothing is deleted: send `{"is_active": false}` to disable.
+
+**Admin = temporary key** (until M3 login): send header `X-Admin-Key` matching `ADMIN_API_KEY` (local: `backend/.env`; dev: `terraform -chdir=../infra/envs/dev output -raw admin_api_key`). In the web app, paste it into the key box on **Admin**.
 
 ## Checks
 

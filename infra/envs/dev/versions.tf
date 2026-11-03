@@ -16,6 +16,11 @@ terraform {
       source  = "hashicorp/archive"
       version = "~> 2.8"
     }
+    # Generates the temporary admin key.
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.7"
+    }
   }
 
   # State is stored in the S3 bucket created by infra/bootstrap.

@@ -48,6 +48,13 @@ module "cost_alarms" {
 
 # ---------- Hosting (M0b) ----------
 
+# TEMPORARY admin key for master-data writes (until M3 login).
+# Read it with: terraform output -raw admin_api_key
+resource "random_password" "admin_api_key" {
+  length  = 32
+  special = false
+}
+
 # FastAPI on Lambda behind an API Gateway HTTP API.
 # CORS_ORIGINS is empty: the browser reaches UI and API through the
 # same CloudFront URL, so no cross-origin calls happen.
@@ -62,6 +69,7 @@ module "api" {
     DSQL_ENDPOINT = module.dsql.endpoint
     DSQL_USER     = "admin"
     CORS_ORIGINS  = "[]"
+    ADMIN_API_KEY = random_password.admin_api_key.result
   }
 }
 

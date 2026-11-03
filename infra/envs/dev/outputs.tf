@@ -48,3 +48,10 @@ output "github_deploy_role_arn" {
   description = "GitHub variable AWS_DEV_DEPLOY_ROLE_ARN"
   value       = module.github_deploy.role_arn
 }
+
+# Temporary admin key (until M3). Hidden in plan output; read with -raw.
+output "admin_api_key" {
+  description = "Key for the X-Admin-Key header on admin writes"
+  value       = random_password.admin_api_key.result
+  sensitive   = true
+}

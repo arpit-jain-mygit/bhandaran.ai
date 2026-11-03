@@ -1,7 +1,12 @@
-<!-- App shell: brand header on top, current page below. -->
+<!-- App shell: brand + navigation on top, current page below. -->
 <header class="topbar">
-  <span class="brand">bhandaran<span class="dot">.ai</span></span>
+  <a class="brand" routerLink="/">bhandaran<span class="dot">.ai</span></a>
   <span class="tagline">Godown space, simplified</span>
+
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+    <a routerLink="/admin/master-data" routerLinkActive="active">Admin</a>
+  </nav>
 </header>
 
 <main class="page">

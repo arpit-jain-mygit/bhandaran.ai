@@ -1,26 +1,30 @@
-<!-- Home page: one status card that reflects GET /api/health. -->
-<section class="card">
-  <h2>System status</h2>
+<!-- Home page: "Find space" dropdowns + system status card. -->
+<div class="stack">
+  <app-find-space />
 
-  @let s = state();
+  <section class="card">
+    <h2>System status</h2>
 
-  @if (s.kind === 'loading') {
-    <!-- Waiting for the API to answer -->
-    <p class="muted" data-testid="status">Checking API…</p>
-  } @else if (s.kind === 'loaded') {
-    <!-- API answered: show API + database status -->
-    <dl>
-      <dt>API</dt>
-      <dd [class]="s.health.status" data-testid="status">{{ s.health.status }}</dd>
-      <dt>Database</dt>
-      <dd [class]="s.health.database">{{ s.health.database }} ({{ s.health.db_mode }})</dd>
-      <dt>Version</dt>
-      <dd>{{ s.health.version }}</dd>
-    </dl>
-  } @else {
-    <!-- API did not answer at all -->
-    <p class="unreachable" data-testid="status">
-      API unreachable - is FastAPI running on port 8000?
-    </p>
-  }
-</section>
+    @let s = state();
+
+    @if (s.kind === 'loading') {
+      <!-- Waiting for the API to answer -->
+      <p class="muted" data-testid="status">Checking API…</p>
+    } @else if (s.kind === 'loaded') {
+      <!-- API answered: show API + database status -->
+      <dl>
+        <dt>API</dt>
+        <dd [class]="s.health.status" data-testid="status">{{ s.health.status }}</dd>
+        <dt>Database</dt>
+        <dd [class]="s.health.database">{{ s.health.database }} ({{ s.health.db_mode }})</dd>
+        <dt>Version</dt>
+        <dd>{{ s.health.version }}</dd>
+      </dl>
+    } @else {
+      <!-- API did not answer at all -->
+      <p class="unreachable" data-testid="status">
+        API unreachable - is FastAPI running on port 8000?
+      </p>
+    }
+  </section>
+</div>
