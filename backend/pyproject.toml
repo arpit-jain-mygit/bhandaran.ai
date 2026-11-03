@@ -20,6 +20,7 @@ dependencies = [
     "boto3==1.43.123",                # AWS SDK (credentials for DSQL)
     "pydantic-settings==2.16.2",      # settings from env vars / .env
     "mangum==0.22.0",                 # runs FastAPI inside AWS Lambda
+    "pyjwt==2.15.1",                  # signed login tokens (JWT)
 ]
 
 # Extra tools only needed while developing and in CI.

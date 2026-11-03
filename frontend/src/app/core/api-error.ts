@@ -12,7 +12,10 @@ export function apiErrorMessage(error: unknown): string {
     return 'Cannot reach the API.';
   }
   if (error.status === 401) {
-    return 'Admin key missing or wrong.';
+    return 'Please log in.';
+  }
+  if (error.status === 403) {
+    return "You don't have access to this.";
   }
 
   const detail = error.error?.detail;

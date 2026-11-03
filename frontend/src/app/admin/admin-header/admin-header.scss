@@ -1,11 +1,9 @@
-// Admin menu + key box. Colours come from styles.scss tokens.
-
-// Menu: simple links, the current page underlined.
+// Admin menu: simple links, the current page underlined.
 .admin-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 1.25rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 
   a {
     color: var(--muted);
@@ -19,45 +17,4 @@
       border-bottom-color: var(--accent);
     }
   }
-}
-
-// Dashed box: a reminder this is a temporary mechanism.
-.key-box {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  padding: 0.75rem;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-
-  label {
-    font-weight: 600;
-  }
-}
-
-input {
-  padding: 0.45rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  min-width: 0;
-}
-
-button {
-  padding: 0.45rem 0.9rem;
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  font: inherit;
-  cursor: pointer;
-}
-
-.hint {
-  color: var(--muted);
-  font-size: 0.9rem;
 }

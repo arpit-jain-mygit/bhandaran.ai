@@ -48,10 +48,10 @@ module "cost_alarms" {
 
 # ---------- Hosting (M0b) ----------
 
-# TEMPORARY admin key for master-data writes (until M3 login).
-# Read it with: terraform output -raw admin_api_key
-resource "random_password" "admin_api_key" {
-  length  = 32
+# Secret that signs login tokens and hashes OTP codes (M3).
+# Changing it logs everyone out. Never printed by Terraform.
+resource "random_password" "app_secret_key" {
+  length  = 64
   special = false
 }
 
@@ -65,11 +65,14 @@ module "api" {
   dsql_cluster_arn = module.dsql.arn
 
   environment = {
-    DB_MODE       = "dsql"
-    DSQL_ENDPOINT = module.dsql.endpoint
-    DSQL_USER     = "admin"
-    CORS_ORIGINS  = "[]"
-    ADMIN_API_KEY = random_password.admin_api_key.result
+    DB_MODE        = "dsql"
+    DSQL_ENDPOINT  = module.dsql.endpoint
+    DSQL_USER      = "admin"
+    CORS_ORIGINS   = "[]"
+    APP_SECRET_KEY = random_password.app_secret_key.result
+    # OTP codes go to CloudWatch logs only (no SMS until M12).
+    OTP_DELIVERY  = "log"
+    COOKIE_SECURE = "true"
   }
 }
 

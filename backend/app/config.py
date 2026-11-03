@@ -28,9 +28,25 @@ class Settings(BaseSettings):
     # Browser origins allowed to call the API (the Angular dev server).
     cors_origins: list[str] = ["http://localhost:4200"]
 
-    # TEMPORARY (until M3 login): secret that admin write requests must
-    # send in the X-Admin-Key header. Empty = all admin writes refused.
-    admin_api_key: str = ""
+    # ---------- Login (M3) ----------
+
+    # Secret used to sign login tokens and hash OTP codes. Must be long
+    # and random; changing it logs everyone out. Empty = login refused.
+    app_secret_key: str = ""
+
+    # Where OTP codes go:
+    #   "log"      - written to the server log only (dev in AWS: CloudWatch)
+    #   "response" - also returned in the API reply, so the login page can
+    #                show it. Only honoured when db_mode = "local".
+    # Real SMS arrives with notifications (M12).
+    otp_delivery: Literal["log", "response"] = "log"
+
+    # Send the session cookie only over HTTPS. Set false for plain
+    # http://localhost if your browser refuses the cookie.
+    cookie_secure: bool = True
+
+    # How long a login lasts before the user must log in again.
+    session_days: int = 7
 
 
 # lru_cache = read settings once, then reuse the same object everywhere.

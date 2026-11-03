@@ -3,9 +3,8 @@
 //
 // 1. Platform values: what applies to everyone unless an owner has
 //    their own value. "Reset" goes back to the built-in default.
-// 2. Owner overrides (TEMPORARY admin tool): until owners can log in
-//    (M3/M4), the admin sets an owner's own values by owner ID to
-//    see how the effective value is chosen.
+// 2. An owner's own values: owners change these on their own screen;
+//    here an admin can look them up or change them by owner ID.
 // ---------------------------------------------------------------
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';

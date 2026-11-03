@@ -1,0 +1,7 @@
+<!-- Renter's main screen. -->
+<h1>Namaste, {{ auth.user()?.name || 'there' }}</h1>
+<section class="card">
+  <h2>My bookings</h2>
+  <p class="muted">Your storage bookings and the bags you keep in each godown will appear here.</p>
+  <a routerLink="/">Find storage space</a>
+</section>

@@ -3,10 +3,10 @@
 // Pages are swapped inside <router-outlet> based on the URL
 // (routes are listed in app.routes.ts).
 // ---------------------------------------------------------------
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
+import { AuthService } from './core/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -14,15 +14,16 @@ import { filter, map } from 'rxjs';
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
+export class App implements OnInit {
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  /** True on any /admin/... page, so the "Admin" link stays highlighted. */
-  protected readonly isAdmin = toSignal(
-    this.router.events.pipe(
-      filter((event) => event instanceof NavigationEnd),
-      map(() => this.router.url.startsWith('/admin')),
-    ),
-    { initialValue: false },
-  );
+  // Find out once at start-up who is logged in (cookie check).
+  ngOnInit(): void {
+    this.auth.ensureLoaded().subscribe();
+  }
+
+  protected logout(): void {
+    this.auth.logout().subscribe(() => this.router.navigateByUrl('/'));
+  }
 }

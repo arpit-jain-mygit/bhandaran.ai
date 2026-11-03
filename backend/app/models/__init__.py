@@ -5,15 +5,20 @@
 from app.models.base import Base
 from app.models.master import City, District, State, StockType, StorageType, Unit
 from app.models.settings import OwnerSetting, PlatformSetting
+from app.models.users import ROLES, OtpChallenge, User, UserRole
 
 __all__ = [
     "Base",
     "City",
     "District",
+    "OtpChallenge",
     "OwnerSetting",
     "PlatformSetting",
+    "ROLES",
     "State",
     "StockType",
     "StorageType",
     "Unit",
+    "User",
+    "UserRole",
 ]

@@ -6,7 +6,7 @@ import uuid
 
 import pytest
 
-from tests.conftest import ADMIN_HEADERS
+from tests.conftest import ADMIN_HEADERS, OWNER_HEADERS, RENTER_HEADERS
 
 
 def unique_code(prefix: str = "T") -> str:
@@ -70,21 +70,20 @@ def test_seeded_cities_were_moved_into_their_districts(client):
     assert cities[0]["state_id"] == state_id(client, "MH")
 
 
-# ---------- admin key ----------
+# ---------- who may change master data ----------
 
 
-def test_write_without_admin_key_is_rejected(client):
+def test_write_without_login_is_rejected(client):
     response = client.post("/api/master/units", json={"code": unique_code(), "name": "Pallet"})
     assert response.status_code == 401
 
 
-def test_write_with_wrong_admin_key_is_rejected(client):
+@pytest.mark.parametrize("headers", [OWNER_HEADERS, RENTER_HEADERS], ids=["owner", "renter"])
+def test_only_admins_may_change_master_data(client, headers):
     response = client.post(
-        "/api/master/units",
-        json={"code": unique_code(), "name": "Pallet"},
-        headers={"X-Admin-Key": "wrong"},
+        "/api/master/units", json={"code": unique_code(), "name": "Pallet"}, headers=headers
     )
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 # ---------- create / update / disable ----------

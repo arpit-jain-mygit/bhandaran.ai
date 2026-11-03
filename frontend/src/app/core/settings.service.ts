@@ -52,7 +52,21 @@ export class SettingsService {
     return this.http.delete<Setting[]>(`${BASE}/${key}`);
   }
 
-  // ---------- one owner ----------
+  // ---------- the logged-in owner's own values ----------
+
+  mine(): Observable<EffectiveSetting[]> {
+    return this.http.get<EffectiveSetting[]>(`${BASE}/me`);
+  }
+
+  setMine(key: string, value: SettingValue): Observable<EffectiveSetting[]> {
+    return this.http.put<EffectiveSetting[]>(`${BASE}/me/${key}`, { value });
+  }
+
+  resetMine(key: string): Observable<EffectiveSetting[]> {
+    return this.http.delete<EffectiveSetting[]>(`${BASE}/me/${key}`);
+  }
+
+  // ---------- any owner (admin) ----------
 
   forOwner(ownerId: string): Observable<EffectiveSetting[]> {
     return this.http.get<EffectiveSetting[]>(`${BASE}/owners/${ownerId}`);

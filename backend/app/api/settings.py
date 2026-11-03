@@ -5,12 +5,13 @@
 #   PUT    /api/settings/{key}        {value}   set platform value     [admin]
 #   DELETE /api/settings/{key}                  back to code default   [admin]
 #
-#   GET    /api/settings/owners/{owner_id}               effective values for an owner
-#   PUT    /api/settings/owners/{owner_id}/{key} {value} set owner override  [admin*]
-#   DELETE /api/settings/owners/{owner_id}/{key}         remove override     [admin*]
+#   GET    /api/settings/me                  my effective values        [owner]
+#   PUT    /api/settings/me/{key}   {value}  set my own value           [owner]
+#   DELETE /api/settings/me/{key}            remove my own value        [owner]
 #
-# * TEMPORARY: until owner login exists (M3/M4), the admin key sets
-#   owner overrides. Later, owners change their own.
+#   GET    /api/settings/owners/{owner_id}               any owner's values  [admin]
+#   PUT    /api/settings/owners/{owner_id}/{key} {value} set for an owner    [admin]
+#   DELETE /api/settings/owners/{owner_id}/{key}         remove for an owner [admin]
 # ---------------------------------------------------------------
 import uuid
 from typing import Annotated
@@ -20,9 +21,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.common import commit_or_409
-from app.auth import require_admin
+from app.auth import require_admin, require_owner
 from app.db import get_session
-from app.models import OwnerSetting, PlatformSetting
+from app.models import OwnerSetting, PlatformSetting, User
 from app.platform_settings import (
     SETTINGS,
     SettingDef,
@@ -120,20 +121,10 @@ def reset_platform_value(key: str, session: DbSession):
     return platform_view(session)
 
 
-# ---------- per owner ----------
+# ---------- per owner (shared logic) ----------
 
 
-@router.get("/owners/{owner_id}", response_model=list[EffectiveSettingOut])
-def list_owner_settings(owner_id: uuid.UUID, session: DbSession):
-    return owner_view(session, owner_id)
-
-
-@router.put(
-    "/owners/{owner_id}/{key}",
-    response_model=list[EffectiveSettingOut],
-    dependencies=[AdminOnly],
-)
-def set_owner_value(owner_id: uuid.UUID, key: str, body: SettingValueIn, session: DbSession):
+def set_owner_override(session: Session, owner_id: uuid.UUID, key: str, body: SettingValueIn):
     setting = setting_or_404(key)
     if not setting.owner_can_override:
         raise HTTPException(status.HTTP_403_FORBIDDEN, f"Owners can't change '{key}'")
@@ -150,12 +141,7 @@ def set_owner_value(owner_id: uuid.UUID, key: str, body: SettingValueIn, session
     return owner_view(session, owner_id)
 
 
-@router.delete(
-    "/owners/{owner_id}/{key}",
-    response_model=list[EffectiveSettingOut],
-    dependencies=[AdminOnly],
-)
-def reset_owner_value(owner_id: uuid.UUID, key: str, session: DbSession):
+def remove_owner_override(session: Session, owner_id: uuid.UUID, key: str):
     setting_or_404(key)
     row = session.scalar(
         select(OwnerSetting).where(OwnerSetting.owner_id == owner_id, OwnerSetting.key == key)
@@ -164,3 +150,52 @@ def reset_owner_value(owner_id: uuid.UUID, key: str, session: DbSession):
         session.delete(row)
         commit_or_409(session, "Setting was changed at the same time, try again")
     return owner_view(session, owner_id)
+
+
+OwnerUser = Annotated[User, Depends(require_owner)]
+
+
+# ---------- the logged-in owner's own values ----------
+
+
+@router.get("/me", response_model=list[EffectiveSettingOut])
+def my_settings(owner: OwnerUser, session: DbSession):
+    return owner_view(session, owner.id)
+
+
+@router.put("/me/{key}", response_model=list[EffectiveSettingOut])
+def set_my_value(key: str, body: SettingValueIn, owner: OwnerUser, session: DbSession):
+    return set_owner_override(session, owner.id, key, body)
+
+
+@router.delete("/me/{key}", response_model=list[EffectiveSettingOut])
+def remove_my_value(key: str, owner: OwnerUser, session: DbSession):
+    return remove_owner_override(session, owner.id, key)
+
+
+# ---------- any owner (admin) ----------
+
+
+@router.get(
+    "/owners/{owner_id}", response_model=list[EffectiveSettingOut], dependencies=[AdminOnly]
+)
+def list_owner_settings(owner_id: uuid.UUID, session: DbSession):
+    return owner_view(session, owner_id)
+
+
+@router.put(
+    "/owners/{owner_id}/{key}",
+    response_model=list[EffectiveSettingOut],
+    dependencies=[AdminOnly],
+)
+def set_owner_value(owner_id: uuid.UUID, key: str, body: SettingValueIn, session: DbSession):
+    return set_owner_override(session, owner_id, key, body)
+
+
+@router.delete(
+    "/owners/{owner_id}/{key}",
+    response_model=list[EffectiveSettingOut],
+    dependencies=[AdminOnly],
+)
+def reset_owner_value(owner_id: uuid.UUID, key: str, session: DbSession):
+    return remove_owner_override(session, owner_id, key)

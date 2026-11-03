@@ -1,0 +1,101 @@
+<!-- Login: phone -> code -> (new users) name + role. -->
+<section class="card">
+  @switch (step()) {
+    <!-- ============ Step 1: phone number ============ -->
+    @case ('phone') {
+      <h1>Log in or sign up</h1>
+      <p class="muted">We'll send a 6-digit code to your mobile.</p>
+
+      <form (ngSubmit)="sendCode()">
+        <label for="phone">Mobile number</label>
+        <div class="phone">
+          <span class="prefix">+91</span>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputmode="numeric"
+            autocomplete="tel-national"
+            placeholder="98260 12345"
+            required
+            [(ngModel)]="phone"
+          />
+        </div>
+        <button type="submit" [disabled]="busy() || !phone.trim()">Send code</button>
+      </form>
+    }
+
+    <!-- ============ Step 2: code ============ -->
+    @case ('code') {
+      <h1>Enter the code</h1>
+      <p class="muted">Sent to +91 {{ phone }}. It works for 5 minutes.</p>
+
+      @if (devCode()) {
+        <p class="dev-code">
+          Local development code: <b>{{ devCode() }}</b>
+        </p>
+      }
+
+      <form (ngSubmit)="verify()">
+        <label for="code">6-digit code</label>
+        <input
+          id="code"
+          name="code"
+          class="code"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          placeholder="______"
+          required
+          [(ngModel)]="code"
+        />
+        <button type="submit" [disabled]="busy() || code.trim().length !== 6">Verify</button>
+      </form>
+
+      <div class="links">
+        <button type="button" class="link" [disabled]="busy()" (click)="sendCode()">
+          Send a new code
+        </button>
+        <button type="button" class="link" (click)="changeNumber()">Change number</button>
+      </div>
+    }
+
+    <!-- ============ Step 3: new account ============ -->
+    @case ('signup') {
+      <h1>Welcome to bhandaran.ai</h1>
+      <p class="muted">New number - tell us a little about you.</p>
+
+      <form (ngSubmit)="createAccount()">
+        <label for="name">Your name</label>
+        <input id="name" name="name" autocomplete="name" required [(ngModel)]="name" />
+
+        <fieldset>
+          <legend>I am a...</legend>
+          <label class="choice">
+            <input type="radio" name="role" value="OWNER" [(ngModel)]="role" />
+            <span>
+              <b>Godown owner</b>
+              <small>I have storage space to rent out</small>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="role" value="RENTER" [(ngModel)]="role" />
+            <span>
+              <b>Renter / trader</b>
+              <small>I need space to store my stock</small>
+            </span>
+          </label>
+        </fieldset>
+
+        <button type="submit" [disabled]="busy() || !name.trim()">Create account</button>
+      </form>
+    }
+  }
+
+  @if (busy()) {
+    <p class="busy"><app-grain-loader [size]="24" label="Please wait" /> Please wait…</p>
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+</section>

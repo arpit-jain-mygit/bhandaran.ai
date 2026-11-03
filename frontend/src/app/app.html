@@ -5,7 +5,22 @@
 
   <nav class="nav">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-    <a routerLink="/admin/master-data" [class.active]="isAdmin()">Admin</a>
+
+    @if (auth.user(); as user) {
+      @if (auth.hasRole('OWNER')) {
+        <a routerLink="/owner" routerLinkActive="active">Owner</a>
+      }
+      @if (auth.hasRole('RENTER')) {
+        <a routerLink="/renter" routerLinkActive="active">Renter</a>
+      }
+      @if (auth.hasRole('ADMIN')) {
+        <a routerLink="/admin/master-data" routerLinkActive="active">Admin</a>
+      }
+      <span class="who">{{ user.name }}</span>
+      <button type="button" class="link" (click)="logout()">Log out</button>
+    } @else if (auth.user() === null) {
+      <a routerLink="/login" routerLinkActive="active">Log in</a>
+    }
   </nav>
 </header>
 

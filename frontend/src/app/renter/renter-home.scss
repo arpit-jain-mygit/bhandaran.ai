@@ -1,0 +1,27 @@
+// Renter's main screen. Colours come from styles.scss tokens.
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 1rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.4rem;
+}
+
+.card {
+  max-width: 520px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+a {
+  color: var(--accent);
+  font-weight: 600;
+}

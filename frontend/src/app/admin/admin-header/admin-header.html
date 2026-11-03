@@ -1,22 +1,5 @@
-<!-- Admin menu + temporary admin key box. -->
+<!-- Admin menu. -->
 <nav class="admin-nav" aria-label="Admin sections">
   <a routerLink="/admin/master-data" routerLinkActive="active">Master data</a>
   <a routerLink="/admin/settings" routerLinkActive="active">Platform settings</a>
 </nav>
-
-<!-- TEMPORARY admin key (until M3 login) -->
-<form class="key-box" (ngSubmit)="saveKey()">
-  <label for="admin-key">Admin key</label>
-  <input
-    id="admin-key"
-    name="adminKey"
-    type="password"
-    autocomplete="off"
-    placeholder="Needed to add or change items"
-    [(ngModel)]="keyInput"
-  />
-  <button type="submit">Save key</button>
-  <span class="hint">
-    {{ saved() || (adminKey.key() ? 'Key set' : 'No key - read only') }}
-  </span>
-</form>

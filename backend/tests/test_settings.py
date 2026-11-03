@@ -6,7 +6,7 @@ import uuid
 
 import pytest
 
-from tests.conftest import ADMIN_HEADERS
+from tests.conftest import ADMIN_HEADERS, OWNER_HEADERS, RENTER_HEADERS, TEST_USERS
 
 TIMEOUT = "renter_confirmation_timeout_days"
 CONFIRM = "offline_booking_requires_renter_confirmation"
@@ -55,8 +55,13 @@ def test_admin_sets_and_resets_a_platform_value(client, reset_platform):
     assert (reset[TIMEOUT]["value"], reset[TIMEOUT]["source"]) == (3, "default")
 
 
-def test_changing_a_platform_value_needs_the_admin_key(client):
+def test_changing_a_platform_value_needs_login(client):
     assert client.put(f"/api/settings/{TIMEOUT}", json={"value": 7}).status_code == 401
+
+
+def test_owners_cannot_change_platform_values(client):
+    response = client.put(f"/api/settings/{TIMEOUT}", json={"value": 7}, headers=OWNER_HEADERS)
+    assert response.status_code == 403
 
 
 @pytest.mark.parametrize(
@@ -106,7 +111,7 @@ def test_one_owners_override_does_not_affect_another(client):
     first, second = uuid.uuid4(), uuid.uuid4()
     client.put(f"/api/settings/owners/{first}/{TIMEOUT}", json={"value": 10}, headers=ADMIN_HEADERS)
 
-    others = by_key(client.get(f"/api/settings/owners/{second}").json())
+    others = by_key(client.get(f"/api/settings/owners/{second}", headers=ADMIN_HEADERS).json())
     assert others[TIMEOUT]["source"] == "default"
 
 
@@ -131,3 +136,32 @@ def test_changing_an_owner_value_twice_keeps_one_row(client):
     effective = by_key(client.put(url, json={"value": 9}, headers=ADMIN_HEADERS).json())
 
     assert effective[TIMEOUT]["value"] == 9
+
+
+# ---------- the logged-in owner's own values ----------
+
+
+def test_owner_sets_and_removes_their_own_value(client):
+    url = f"/api/settings/me/{TIMEOUT}"
+
+    mine = by_key(client.put(url, json={"value": 12}, headers=OWNER_HEADERS).json())
+    assert (mine[TIMEOUT]["value"], mine[TIMEOUT]["source"]) == (12, "owner")
+
+    # The admin sees the same value for this owner.
+    owner_id = TEST_USERS["owner"].id
+    seen = by_key(client.get(f"/api/settings/owners/{owner_id}", headers=ADMIN_HEADERS).json())
+    assert seen[TIMEOUT]["value"] == 12
+
+    back = by_key(client.delete(url, headers=OWNER_HEADERS).json())
+    assert back[TIMEOUT]["source"] == "default"
+
+
+def test_renters_and_visitors_have_no_owner_settings(client):
+    assert client.get("/api/settings/me", headers=RENTER_HEADERS).status_code == 403
+    assert client.get("/api/settings/me").status_code == 401
+
+
+def test_only_admins_see_other_owners_settings(client):
+    owner_id = TEST_USERS["owner"].id
+    response = client.get(f"/api/settings/owners/{owner_id}", headers=OWNER_HEADERS)
+    assert response.status_code == 403
