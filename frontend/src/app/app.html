@@ -16,6 +16,7 @@
       @if (auth.hasRole('ADMIN')) {
         <a routerLink="/admin/master-data" routerLinkActive="active">Admin</a>
       }
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
       <span class="who">{{ user.name }}</span>
       <button type="button" class="link" (click)="logout()">Log out</button>
     } @else if (auth.user() === null) {

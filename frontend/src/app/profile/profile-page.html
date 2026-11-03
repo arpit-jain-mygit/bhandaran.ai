@@ -1,0 +1,40 @@
+<!-- My profile: name, city, optional GST number. -->
+<h1>My profile</h1>
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Loading your profile" /> Loading…</p>
+} @else if (profile(); as me) {
+  <p class="muted">{{ me.email }}</p>
+
+  <form class="card" (ngSubmit)="save()">
+    <label for="name">Name</label>
+    <input id="name" name="name" autocomplete="name" required maxlength="100" [(ngModel)]="name" />
+
+    <label for="city">City or town</label>
+    <select id="city" name="city" [(ngModel)]="cityId">
+      <option value="">Not set</option>
+      @for (city of cities(); track city.id) {
+        <option [value]="city.id">{{ city.name }}</option>
+      }
+    </select>
+
+    <label for="gst">GST number <span class="muted">(optional)</span></label>
+    <input
+      id="gst"
+      name="gst"
+      autocomplete="off"
+      maxlength="15"
+      placeholder="23ABCDE1234F1Z5"
+      [(ngModel)]="gst"
+    />
+
+    <button type="submit" [disabled]="busy() || !name.trim()">Save profile</button>
+  </form>
+}
+
+@if (notice()) {
+  <p class="msg notice" role="status">{{ notice() }}</p>
+}
+@if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+}

@@ -4,6 +4,79 @@ h1 {
   margin: 0 0 0.25rem;
 }
 
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem;
+}
+
 .muted {
   color: var(--muted);
+}
+
+.small {
+  font-size: 0.9rem;
+}
+
+.card {
+  max-width: 480px;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+form {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+input {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+
+button {
+  justify-self: start;
+  margin-top: 0.5rem;
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.msg {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+
+  &.error {
+    color: var(--bad);
+    border: 1px solid var(--bad);
+  }
+
+  &.notice {
+    color: var(--good);
+    border: 1px solid var(--good);
+  }
 }

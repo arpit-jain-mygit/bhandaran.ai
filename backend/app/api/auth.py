@@ -161,6 +161,10 @@ def verify_otp(body: OtpVerify, response: Response, session: DbSession):
     user = session.scalar(select(User).where(User.email == email))
     if user is None:
         return VerifyResult(status="signup_required", signup_token=create_signup_token(email))
+    if user.status == "UNCLAIMED":
+        # An invited renter proved they own this email: the account is claimed.
+        user.status = "ACTIVE"
+        commit_or_409(session, "Please try again")
     if user.status != "ACTIVE":
         raise HTTPException(status.HTTP_403_FORBIDDEN, "This account is suspended")
 

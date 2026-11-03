@@ -26,7 +26,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UuidPkMixin
 
 ROLES = ("OWNER", "RENTER", "ADMIN")
-USER_STATUSES = ("ACTIVE", "SUSPENDED")
+# UNCLAIMED: a renter an owner invited by email, who has not logged in yet.
+USER_STATUSES = ("ACTIVE", "SUSPENDED", "UNCLAIMED")
 
 
 class User(UuidPkMixin, TimestampMixin, Base):
@@ -46,6 +47,15 @@ class User(UuidPkMixin, TimestampMixin, Base):
     name: Mapped[str | None] = mapped_column(String(100))
     # SUSPENDED users can't log in (and existing sessions stop working).
     status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="ACTIVE")
+    # Profile (M4). The city is a row in the city table; GST is optional.
+    city_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("city.id", name="fk_app_user_city")
+    )
+    gst_number: Mapped[str | None] = mapped_column(String(15))
+    # Set when an owner invited this renter by email.
+    invited_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("app_user.id", name="fk_app_user_invited_by")
+    )
 
     roles: Mapped[list["UserRole"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="selectin"

@@ -25,6 +25,14 @@ export const routes: Routes = [
     loadComponent: () => import('./owner/owner-home').then((m) => m.OwnerHome),
   },
 
+  // "/profile" - my name, city and GST number (M4). Any logged-in role.
+  {
+    path: 'profile',
+    title: 'My profile - bhandaran.ai',
+    canActivate: [roleGuard('OWNER', 'RENTER', 'ADMIN')],
+    loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage),
+  },
+
   // "/renter" - renter's main screen, renters only (M3).
   {
     path: 'renter',
