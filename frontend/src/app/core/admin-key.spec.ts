@@ -41,6 +41,16 @@ describe('adminKeyInterceptor', () => {
     request.flush({});
   });
 
+  it('adds X-Admin-Key to settings writes too', () => {
+    store.set('secret');
+
+    http.put('/api/settings/renter_confirmation_timeout_days', { value: 5 }).subscribe();
+
+    const request = httpMock.expectOne('/api/settings/renter_confirmation_timeout_days');
+    expect(request.request.headers.get('X-Admin-Key')).toBe('secret');
+    request.flush([]);
+  });
+
   it('does not add the key to reads', () => {
     store.set('secret');
 

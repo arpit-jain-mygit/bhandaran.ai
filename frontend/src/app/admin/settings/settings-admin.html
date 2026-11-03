@@ -1,0 +1,155 @@
+<!-- Admin > Platform settings: platform values + (temporary) owner overrides. -->
+<app-admin-header />
+<h1>Platform settings</h1>
+<p class="intro">
+  Which value applies: an <b>owner's own value</b> if they set one, otherwise the
+  <b>platform value</b> below, otherwise the built-in <b>default</b>.
+</p>
+
+@if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p class="msg notice" role="status">{{ notice() }}</p>
+}
+
+<!-- ================= Platform values ================= -->
+<h2>Platform values</h2>
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Loading settings" /> Loading…</p>
+}
+
+<div class="cards">
+  @for (s of settings(); track s.key) {
+    <section class="card">
+      <div class="card-head">
+        <h3>{{ s.label }}</h3>
+        <span class="badge" [class]="'badge ' + s.source">{{ sourceLabel(s.source) }}</span>
+      </div>
+      <p class="muted">{{ s.description }}</p>
+
+      <!-- Editor depends on the setting's type -->
+      <div class="editor">
+        @switch (s.type) {
+          @case ('bool') {
+            <label class="switch">
+              <input type="checkbox" [name]="s.key" [(ngModel)]="draft[s.key]" />
+              {{ draft[s.key] ? 'Yes' : 'No' }}
+            </label>
+          }
+          @case ('int') {
+            <input
+              type="number"
+              class="narrow"
+              [name]="s.key"
+              [min]="s.min"
+              [max]="s.max"
+              [(ngModel)]="draft[s.key]"
+            />
+            <span class="muted">{{ s.min }} - {{ s.max }}</span>
+          }
+          @case ('choice') {
+            <select [name]="s.key" [(ngModel)]="draft[s.key]">
+              @for (c of s.choices; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          }
+        }
+
+        <button type="button" [disabled]="!changed(s)" (click)="savePlatform(s)">Save</button>
+        @if (s.source === 'platform') {
+          <button type="button" class="link" (click)="resetPlatform(s)">
+            Reset to default ({{ show(s.default) }})
+          </button>
+        }
+      </div>
+    </section>
+  }
+</div>
+
+<!-- ================= Owner overrides (temporary) ================= -->
+<h2>Owner's own values <span class="temp">temporary admin tool</span></h2>
+<p class="muted">
+  Until owners can log in (M3/M4), set an owner's own values here by owner ID. Use
+  <b>New test owner</b> to try it with a made-up ID.
+</p>
+
+<form class="owner-pick" (ngSubmit)="loadOwner()">
+  <input
+    name="ownerId"
+    placeholder="Owner ID (UUID)"
+    autocomplete="off"
+    [(ngModel)]="ownerIdInput"
+  />
+  <button type="submit">Load</button>
+  <button type="button" class="secondary" (click)="newTestOwner()">New test owner</button>
+</form>
+
+@if (ownerId()) {
+  <p class="muted">
+    Owner <code>{{ ownerId() }}</code>
+  </p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Setting</th>
+          <th>Applies now</th>
+          <th>Owner's value</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ownerSettings(); track row.key) {
+          @let r = rules(row.key);
+          <tr>
+            <td>{{ row.label }}</td>
+            <td>
+              <b>{{ show(row.value) }}</b>
+              <span [class]="'badge ' + row.source">{{ sourceLabel(row.source) }}</span>
+            </td>
+            <td>
+              @switch (r?.type) {
+                @case ('bool') {
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [name]="'owner-' + row.key"
+                      [(ngModel)]="ownerDraft[row.key]"
+                    />
+                    {{ ownerDraft[row.key] ? 'Yes' : 'No' }}
+                  </label>
+                }
+                @case ('int') {
+                  <input
+                    type="number"
+                    class="narrow"
+                    [name]="'owner-' + row.key"
+                    [min]="r?.min"
+                    [max]="r?.max"
+                    [(ngModel)]="ownerDraft[row.key]"
+                  />
+                }
+                @case ('choice') {
+                  <select [name]="'owner-' + row.key" [(ngModel)]="ownerDraft[row.key]">
+                    @for (c of r?.choices ?? []; track c) {
+                      <option [value]="c">{{ c }}</option>
+                    }
+                  </select>
+                }
+              }
+            </td>
+            <td class="actions">
+              <button type="button" (click)="saveOwner(row)">Save</button>
+              @if (row.source === 'owner') {
+                <button type="button" class="link" (click)="resetOwner(row)">Remove</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

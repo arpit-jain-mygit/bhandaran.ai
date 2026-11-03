@@ -5,7 +5,7 @@
 
   <nav class="nav">
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
-    <a routerLink="/admin/master-data" routerLinkActive="active">Admin</a>
+    <a routerLink="/admin/master-data" [class.active]="isAdmin()">Admin</a>
   </nav>
 </header>
 

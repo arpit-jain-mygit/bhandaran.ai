@@ -17,6 +17,13 @@ export const routes: Routes = [
       import('./admin/master-data/master-data-admin').then((m) => m.MasterDataAdmin),
   },
 
+  // "/admin/settings" - platform settings + owner overrides (M2).
+  {
+    path: 'admin/settings',
+    title: 'Platform settings - bhandaran.ai',
+    loadComponent: () => import('./admin/settings/settings-admin').then((m) => m.SettingsAdmin),
+  },
+
   // Any unknown URL goes back to Home.
   { path: '**', redirectTo: '' },
 ];

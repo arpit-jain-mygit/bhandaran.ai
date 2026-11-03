@@ -4,7 +4,7 @@
 // AdminKeyStore  - remembers the key for this browser tab only
 //                  (sessionStorage: cleared when the tab closes).
 // adminKeyInterceptor - adds "X-Admin-Key: <key>" to every
-//                  non-GET request to /api/master.
+//                  non-GET request to /api/master or /api/settings.
 // ---------------------------------------------------------------
 import { HttpInterceptorFn } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
@@ -43,7 +43,8 @@ export class AdminKeyStore {
 
 export const adminKeyInterceptor: HttpInterceptorFn = (request, next) => {
   const key = inject(AdminKeyStore).key();
-  const isAdminWrite = request.method !== 'GET' && request.url.startsWith('/api/master');
+  const adminApi = ['/api/master', '/api/settings'].some((p) => request.url.startsWith(p));
+  const isAdminWrite = request.method !== 'GET' && adminApi;
 
   if (isAdminWrite && key) {
     return next(request.clone({ setHeaders: { 'X-Admin-Key': key } }));

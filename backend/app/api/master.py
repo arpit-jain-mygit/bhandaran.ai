@@ -24,9 +24,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
+from app.api.common import commit_or_409
 from app.auth import require_admin
 from app.db import get_session
 from app.models import City, District, State, StockType, StorageType, Unit
@@ -66,27 +66,6 @@ def lookup_model(kind: str):
     if model is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"Unknown list '{kind}'")
     return model
-
-
-def commit_or_409(session: Session, conflict_message: str) -> None:
-    """
-    Save changes. Two kinds of failure become HTTP 409 (Conflict):
-      - IntegrityError: a unique rule was broken (duplicate code/name)
-      - SQLSTATE 40001: DSQL optimistic-concurrency conflict; the
-        client can simply try again
-    """
-    try:
-        session.commit()
-    except IntegrityError as error:
-        session.rollback()
-        raise HTTPException(status.HTTP_409_CONFLICT, conflict_message) from error
-    except OperationalError as error:
-        session.rollback()
-        if getattr(error.orig, "sqlstate", None) == "40001":
-            raise HTTPException(
-                status.HTTP_409_CONFLICT, "Changed by someone else at the same time, try again"
-            ) from error
-        raise
 
 
 # ---------- districts and cities ----------

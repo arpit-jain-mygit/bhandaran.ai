@@ -1,0 +1,133 @@
+# ---------------------------------------------------------------
+# Tests for platform settings (M2): default -> platform -> owner.
+# Each test resets what it changes, so tests don't affect each other.
+# ---------------------------------------------------------------
+import uuid
+
+import pytest
+
+from tests.conftest import ADMIN_HEADERS
+
+TIMEOUT = "renter_confirmation_timeout_days"
+CONFIRM = "offline_booking_requires_renter_confirmation"
+ON_TIMEOUT = "on_timeout_action"
+
+
+def by_key(items: list[dict]) -> dict[str, dict]:
+    return {item["key"]: item for item in items}
+
+
+@pytest.fixture
+def reset_platform(client):
+    """Put platform values back to their defaults after a test."""
+    yield
+    for key in (TIMEOUT, CONFIRM, ON_TIMEOUT):
+        client.delete(f"/api/settings/{key}", headers=ADMIN_HEADERS)
+
+
+# ---------- reading ----------
+
+
+def test_lists_all_settings_with_defaults(client, reset_platform):
+    settings = by_key(client.get("/api/settings").json())
+
+    assert set(settings) == {
+        CONFIRM,
+        TIMEOUT,
+        ON_TIMEOUT,
+        "allow_stock_in_before_confirmation",
+    }
+    assert settings[TIMEOUT]["value"] == 3
+    assert settings[TIMEOUT]["source"] == "default"
+    assert settings[ON_TIMEOUT]["choices"] == ["AUTO_CONFIRM", "FLAG_UNVERIFIED"]
+
+
+# ---------- platform values ----------
+
+
+def test_admin_sets_and_resets_a_platform_value(client, reset_platform):
+    changed = by_key(
+        client.put(f"/api/settings/{TIMEOUT}", json={"value": 7}, headers=ADMIN_HEADERS).json()
+    )
+    assert (changed[TIMEOUT]["value"], changed[TIMEOUT]["source"]) == (7, "platform")
+
+    reset = by_key(client.delete(f"/api/settings/{TIMEOUT}", headers=ADMIN_HEADERS).json())
+    assert (reset[TIMEOUT]["value"], reset[TIMEOUT]["source"]) == (3, "default")
+
+
+def test_changing_a_platform_value_needs_the_admin_key(client):
+    assert client.put(f"/api/settings/{TIMEOUT}", json={"value": 7}).status_code == 401
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        (TIMEOUT, 0),  # below min 1
+        (TIMEOUT, 31),  # above max 30
+        (TIMEOUT, True),  # a boolean is not a number of days
+        (TIMEOUT, "5"),  # text, not a number
+        (CONFIRM, 1),  # a number is not true/false
+        (ON_TIMEOUT, "LATER"),  # not one of the choices
+    ],
+)
+def test_invalid_values_are_rejected(client, key, value):
+    response = client.put(f"/api/settings/{key}", json={"value": value}, headers=ADMIN_HEADERS)
+    assert response.status_code == 422
+
+
+def test_unknown_setting_returns_404(client):
+    response = client.put("/api/settings/fly_to_moon", json={"value": True}, headers=ADMIN_HEADERS)
+    assert response.status_code == 404
+
+
+# ---------- owner overrides ----------
+
+
+def test_owner_override_wins_over_platform_and_default(client, reset_platform):
+    owner = uuid.uuid4()
+    client.put(f"/api/settings/{TIMEOUT}", json={"value": 5}, headers=ADMIN_HEADERS)
+
+    # Owner changes one setting...
+    response = client.put(
+        f"/api/settings/owners/{owner}/{CONFIRM}", json={"value": False}, headers=ADMIN_HEADERS
+    )
+    effective = by_key(response.json())
+
+    # ...that one comes from the owner, the others fall through.
+    assert (effective[CONFIRM]["value"], effective[CONFIRM]["source"]) == (False, "owner")
+    assert (effective[TIMEOUT]["value"], effective[TIMEOUT]["source"]) == (5, "platform")
+    assert (effective[ON_TIMEOUT]["value"], effective[ON_TIMEOUT]["source"]) == (
+        "FLAG_UNVERIFIED",
+        "default",
+    )
+
+
+def test_one_owners_override_does_not_affect_another(client):
+    first, second = uuid.uuid4(), uuid.uuid4()
+    client.put(f"/api/settings/owners/{first}/{TIMEOUT}", json={"value": 10}, headers=ADMIN_HEADERS)
+
+    others = by_key(client.get(f"/api/settings/owners/{second}").json())
+    assert others[TIMEOUT]["source"] == "default"
+
+
+def test_removing_an_owner_override_falls_back(client):
+    owner = uuid.uuid4()
+    url = f"/api/settings/owners/{owner}/{ON_TIMEOUT}"
+    client.put(url, json={"value": "AUTO_CONFIRM"}, headers=ADMIN_HEADERS)
+
+    effective = by_key(client.delete(url, headers=ADMIN_HEADERS).json())
+
+    assert (effective[ON_TIMEOUT]["value"], effective[ON_TIMEOUT]["source"]) == (
+        "FLAG_UNVERIFIED",
+        "default",
+    )
+
+
+def test_changing_an_owner_value_twice_keeps_one_row(client):
+    owner = uuid.uuid4()
+    url = f"/api/settings/owners/{owner}/{TIMEOUT}"
+    client.put(url, json={"value": 4}, headers=ADMIN_HEADERS)
+
+    effective = by_key(client.put(url, json={"value": 9}, headers=ADMIN_HEADERS).json())
+
+    assert effective[TIMEOUT]["value"] == 9

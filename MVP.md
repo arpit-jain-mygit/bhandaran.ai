@@ -41,7 +41,7 @@ A marketplace that connects **godown owners** (who rent out storage space) with 
 | M0 | App foundation | ✅ |
 | M0b | Dev deploy | ✅ |
 | M1 | Master data | ✅ |
-| M2 | Platform config | ⬜ |
+| M2 | Platform config | ✅ |
 | M3 | Login | ⬜ |
 | M4 | Profiles | ⬜ |
 | M5 | Warehouse listing | ⬜ |
@@ -123,6 +123,9 @@ Status: ⬜ not started · 🟡 in progress · ✅ done
 - `renter_confirmation_timeout_days`
 - `on_timeout_action` (`AUTO_CONFIRM` / `FLAG_UNVERIFIED`)
 - `allow_stock_in_before_confirmation`
+- Setting list lives in code (`backend/app/platform_settings.py`); the database stores only changed values (`platform_setting`, `owner_setting`)
+- Effective value = owner override → platform value → code default; the API also says which one applied
+- Admin screen `/admin/settings`; until owner login (M3/M4) the admin sets owner overrides by owner ID (temporary)
 
 **Done when:** admin sets defaults, an owner overrides one, and the API returns the effective value.
 

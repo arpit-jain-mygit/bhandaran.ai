@@ -9,6 +9,7 @@
 - [Migrations](#migrations)
 - [DSQL rules for migrations](#dsql-rules-for-migrations)
 - [Master data API](#master-data-api)
+- [Platform settings API](#platform-settings-api)
 - [Checks](#checks)
 - [Lambda build](#lambda-build)
 
@@ -25,6 +26,8 @@ backend/
 │   ├── schemas/         request/response shapes (Pydantic)
 │   ├── api/health.py    GET /api/health
 │   ├── api/master.py    master-data API (M1)
+│   ├── api/settings.py  platform-settings API (M2)
+│   ├── platform_settings.py  setting list + effective-value rules (M2)
 │   └── lambda_handler.py  AWS Lambda entry (Mangum)
 ├── scripts/build_lambda.sh  builds dist/lambda.zip (Linux arm64)
 ├── migrations/          Alembic (env.py handles DSQL rules)
@@ -133,6 +136,21 @@ Aurora DSQL is stricter than PostgreSQL. `migrations/env.py` runs in AUTOCOMMIT 
 `kind` = `stock-types`, `storage-types`, `units`, `states`. Locations nest **state → district → city / town**; town names are unique within a district (the same name may exist in two districts). Nothing is deleted: send `{"is_active": false}` to disable.
 
 **Admin = temporary key** (until M3 login): send header `X-Admin-Key` matching `ADMIN_API_KEY` (local: `backend/.env`; dev: `terraform -chdir=../infra/envs/dev output -raw admin_api_key`). In the web app, paste it into the key box on **Admin**.
+
+## Platform settings API
+
+Each setting is defined in code in `app/platform_settings.py` (type, default, allowed values). The value that applies is the **owner's override**, else the **platform value**, else the **code default**; responses include `source` (`owner` / `platform` / `default`).
+
+| Method | Path | Who |
+|---|---|---|
+| GET | `/api/settings` | anyone |
+| PUT | `/api/settings/{key}` `{value}` | admin |
+| DELETE | `/api/settings/{key}` (back to default) | admin |
+| GET | `/api/settings/owners/{owner_id}` | anyone (owner-only after M3) |
+| PUT | `/api/settings/owners/{owner_id}/{key}` `{value}` | admin for now (the owner after M3/M4) |
+| DELETE | `/api/settings/owners/{owner_id}/{key}` | admin for now |
+
+To add a setting, add a `SettingDef` to `SETTINGS` - no migration needed. Code that needs the values calls `effective_settings(session, owner_id)`.
 
 ## Checks
 

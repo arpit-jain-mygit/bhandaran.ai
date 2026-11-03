@@ -5,6 +5,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { MasterDataAdmin } from './master-data-admin';
 
@@ -17,7 +18,7 @@ describe('MasterDataAdmin', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MasterDataAdmin],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
     httpMock = TestBed.inject(HttpTestingController);
   });

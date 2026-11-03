@@ -12,8 +12,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 
-import { AdminKeyStore } from '../../core/admin-key';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
+import { AdminHeader } from '../admin-header/admin-header';
 import { apiErrorMessage } from '../../core/api-error';
 import {
   District,
@@ -49,13 +49,12 @@ export const TABS: Tab[] = [
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [FormsModule, GrainLoader],
+  imports: [FormsModule, GrainLoader, AdminHeader],
   templateUrl: './master-data-admin.html',
   styleUrl: './master-data-admin.scss',
 })
 export class MasterDataAdmin implements OnInit {
   private readonly api = inject(MasterDataService);
-  protected readonly adminKey = inject(AdminKeyStore);
 
   protected readonly tabs = TABS;
   protected readonly tab = signal<TabKind>('stock-types');
@@ -76,7 +75,6 @@ export class MasterDataAdmin implements OnInit {
   protected readonly notice = signal('');
 
   // "Add" form fields (bound with ngModel).
-  protected keyInput = this.adminKey.key();
   protected newCode = '';
   protected newName = '';
   protected newSortOrder = 0;
@@ -114,11 +112,6 @@ export class MasterDataAdmin implements OnInit {
   protected selectDistrict(districtId: string): void {
     this.districtId.set(districtId);
     this.load();
-  }
-
-  protected saveKey(): void {
-    this.adminKey.set(this.keyInput);
-    this.notice.set(this.keyInput.trim() ? 'Admin key saved for this tab.' : 'Admin key cleared.');
   }
 
   // ---------- loading ----------

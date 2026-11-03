@@ -1,20 +1,6 @@
-<!-- Admin > Master data: key box, tabs, add form, table. -->
+<!-- Admin > Master data: admin menu + key, tabs, add form, table. -->
+<app-admin-header />
 <h1>Master data</h1>
-
-<!-- TEMPORARY admin key (until M3 login) -->
-<form class="key-box" (ngSubmit)="saveKey()">
-  <label for="admin-key">Admin key</label>
-  <input
-    id="admin-key"
-    name="adminKey"
-    type="password"
-    autocomplete="off"
-    placeholder="Needed to add or change items"
-    [(ngModel)]="keyInput"
-  />
-  <button type="submit">Save key</button>
-  <span class="hint">{{ adminKey.key() ? 'Key set' : 'No key - read only' }}</span>
-</form>
 
 <!-- Tabs -->
 <nav class="tabs" role="tablist">

@@ -1,0 +1,214 @@
+// Admin > Platform settings. Colours come from styles.scss tokens.
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 1.75rem 0 0.75rem;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.intro,
+.muted {
+  color: var(--muted);
+}
+
+.muted {
+  font-size: 0.9rem;
+}
+
+// Shared input / button look (same as Master data).
+input,
+select {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+
+input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.secondary {
+    background: none;
+    color: var(--accent);
+  }
+
+  &.link {
+    background: none;
+    border-color: transparent;
+    color: var(--accent);
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+.narrow {
+  width: 5.5rem;
+}
+
+.msg {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+
+  &.error {
+    color: var(--bad);
+    border: 1px solid var(--bad);
+  }
+
+  &.notice {
+    color: var(--good);
+    border: 1px solid var(--good);
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+}
+
+// One card per setting, two per row on wide screens.
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+
+  .muted {
+    margin: 0.4rem 0 0.9rem;
+  }
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+}
+
+// Where a value comes from: Owner / Platform / Default.
+.badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  color: var(--muted);
+
+  &.platform {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  &.owner {
+    border-color: var(--grain-dal);
+    color: var(--grain-dal);
+  }
+}
+
+.temp {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+}
+
+.owner-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  input {
+    flex: 1 1 18rem;
+  }
+}
+
+code {
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+// Table card; scrolls sideways on narrow phones only.
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.actions {
+  text-align: right;
+}
