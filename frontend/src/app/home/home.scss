@@ -1,0 +1,44 @@
+// Status card styles. Colours come from CSS variables in styles.scss.
+.card {
+  max-width: 420px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+// Two-column "label : value" list.
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+dt {
+  color: var(--muted);
+}
+
+dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+// Green for healthy, red for problems.
+.ok {
+  color: var(--good);
+}
+
+.degraded,
+.unreachable {
+  color: var(--bad);
+}
+
+.muted {
+  color: var(--muted);
+}

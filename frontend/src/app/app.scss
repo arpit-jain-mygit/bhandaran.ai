@@ -1,0 +1,29 @@
+// Shell layout: full-width header, centred page content.
+.topbar {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.dot {
+  color: var(--accent);
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.page {
+  padding: 1.5rem 16px;
+  max-width: 960px;
+  margin: 0 auto;
+}

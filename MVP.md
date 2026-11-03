@@ -37,7 +37,7 @@ A marketplace that connects **godown owners** (who rent out storage space) with 
 | # | Milestone | Status |
 |---|---|---|
 | T0 | Terraform foundation | ✅ |
-| M0 | App foundation | ⬜ |
+| M0 | App foundation | ✅ |
 | M1 | Master data | ⬜ |
 | M2 | Platform config | ⬜ |
 | M3 | Login | ⬜ |
