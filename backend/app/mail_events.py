@@ -26,7 +26,8 @@ def is_ses_sns_event(event: object) -> bool:
 
 def addresses_to_suppress(message: dict) -> list[tuple[str, str]]:
     """(address, reason) pairs that should stop future mail."""
-    kind = message.get("notificationType")
+    # Configuration-set reports say "eventType"; older identity reports say "notificationType".
+    kind = message.get("eventType") or message.get("notificationType")
     if kind == "Bounce":
         bounce = message.get("bounce", {})
         if bounce.get("bounceType") != "Permanent":

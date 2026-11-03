@@ -59,6 +59,18 @@ def test_complaint_is_suppressed():
     assert addresses_to_suppress(complaint("x@example.com")) == [("x@example.com", "COMPLAINT")]
 
 
+def test_configuration_set_reports_use_event_type():
+    # The format SES sends for a configuration set (what the API uses).
+    message = {
+        "eventType": "Bounce",
+        "bounce": {
+            "bounceType": "Permanent",
+            "bouncedRecipients": [{"emailAddress": "x@example.com"}],
+        },
+    }
+    assert addresses_to_suppress(message) == [("x@example.com", "BOUNCE")]
+
+
 def test_delivery_reports_are_ignored():
     assert addresses_to_suppress({"notificationType": "Delivery"}) == []
 
