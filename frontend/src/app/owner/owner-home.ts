@@ -10,10 +10,11 @@ import { RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
 import { ProfileService } from '../core/profile.service';
+import { WelcomeBanner } from '../shared/welcome-banner/welcome-banner';
 
 @Component({
   selector: 'app-owner-home',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, WelcomeBanner],
   templateUrl: './owner-home.html',
   styleUrl: './owner-home.scss',
 })

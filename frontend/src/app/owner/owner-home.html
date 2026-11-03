@@ -1,6 +1,11 @@
 <!-- Owner's main screen: godowns first; inviting a renter is optional. -->
-<h1>Namaste, {{ auth.user()?.name || 'owner' }}</h1>
-<p class="muted">Your bookings will appear here soon.</p>
+<app-welcome-banner
+  [name]="auth.user()?.name"
+  role="Godown owner"
+  message="List your storage space, get it approved, and fill it with renters. Bookings will appear here soon."
+  actionLabel="Add a godown"
+  actionLink="/owner/warehouses/new"
+/>
 
 <section class="card">
   <h2>My godowns</h2>

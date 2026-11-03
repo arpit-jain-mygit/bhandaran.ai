@@ -6,10 +6,11 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../core/auth.service';
+import { WelcomeBanner } from '../shared/welcome-banner/welcome-banner';
 
 @Component({
   selector: 'app-renter-home',
-  imports: [RouterLink],
+  imports: [RouterLink, WelcomeBanner],
   templateUrl: './renter-home.html',
   styleUrl: './renter-home.scss',
 })

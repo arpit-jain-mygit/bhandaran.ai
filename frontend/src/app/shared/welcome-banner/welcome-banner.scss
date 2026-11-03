@@ -1,0 +1,133 @@
+// Welcome banner. Colours come from styles.scss tokens, so it follows
+// light and dark mode.
+.banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 1.5rem 1.5rem 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 92% 20%,
+      color-mix(in srgb, var(--grain-wheat) 22%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 75% 110%,
+      color-mix(in srgb, var(--grain-moong) 18%, transparent),
+      transparent 45%
+    ),
+    var(--surface);
+}
+
+.text {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+}
+
+.role {
+  display: inline-block;
+  margin: 0 0 0.4rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--grain-wheat);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+}
+
+.message {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.action {
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+// A loose scatter of grains on the right.
+.grains {
+  position: relative;
+  flex: 0 0 120px;
+  height: 90px;
+
+  .g {
+    position: absolute;
+    width: 18px;
+    height: 28px;
+    border-radius: 50% / 60%;
+    opacity: 0.85;
+
+    &.small {
+      width: 12px;
+      height: 18px;
+      opacity: 0.6;
+    }
+  }
+
+  .wheat {
+    background: var(--grain-wheat);
+    top: 6px;
+    left: 18px;
+    transform: rotate(-20deg);
+  }
+  .dal {
+    background: var(--grain-dal);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    top: 40px;
+    left: 60px;
+  }
+  .moong {
+    background: var(--grain-moong);
+    top: 4px;
+    left: 80px;
+    transform: rotate(25deg);
+  }
+  .chana {
+    background: var(--grain-chana);
+    width: 24px;
+    height: 24px;
+    border-radius: 45%;
+    top: 56px;
+    left: 6px;
+  }
+  .wheat.small {
+    top: 62px;
+    left: 98px;
+    transform: rotate(40deg);
+  }
+  .moong.small {
+    top: 30px;
+    left: 2px;
+    transform: rotate(-35deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .grains {
+    display: none;
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+}

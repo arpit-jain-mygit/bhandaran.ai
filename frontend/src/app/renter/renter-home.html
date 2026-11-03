@@ -1,5 +1,11 @@
 <!-- Renter's main screen. -->
-<h1>Namaste, {{ auth.user()?.name || 'there' }}</h1>
+<app-welcome-banner
+  [name]="auth.user()?.name"
+  role="Renter"
+  message="Find storage space near you and keep track of the bags you store in each godown."
+  actionLabel="Find storage space"
+  actionLink="/"
+/>
 <section class="card">
   <h2>My bookings</h2>
   <p class="muted">Your storage bookings and the bags you keep in each godown will appear here.</p>

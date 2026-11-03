@@ -1,0 +1,22 @@
+<!-- Greeting + what you can do here + one main button. -->
+<section class="banner" aria-labelledby="welcome-title">
+  <div class="text">
+    @if (role()) {
+      <p class="role">{{ role() }}</p>
+    }
+    <h1 id="welcome-title">Namaste, {{ name() || 'friend' }}</h1>
+    <p class="message">{{ message() }}</p>
+    @if (actionLabel() && actionLink()) {
+      <a class="action" [routerLink]="actionLink()">{{ actionLabel() }}</a>
+    }
+  </div>
+  <!-- Decorative grains, hidden from screen readers. -->
+  <div class="grains" aria-hidden="true">
+    <span class="g wheat"></span>
+    <span class="g dal"></span>
+    <span class="g moong"></span>
+    <span class="g chana"></span>
+    <span class="g wheat small"></span>
+    <span class="g moong small"></span>
+  </div>
+</section>
