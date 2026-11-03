@@ -1,71 +1,27 @@
-<!-- Owner's main screen: welcome + my booking rules. -->
+<!-- Owner's main screen: welcome + the booking rules set for everyone. -->
 <h1>Namaste, {{ auth.user()?.name || 'owner' }}</h1>
 <p class="muted">Your godown listings and bookings will appear here soon.</p>
 
-<h2>My booking rules</h2>
+<h2>Booking rules</h2>
 <p class="muted">
-  These apply to bookings at your godowns. Leave a rule on the <b>platform default</b>, or choose
-  your own.
+  Set by bhandaran.ai for all godowns. These apply to every booking, so they can't be changed here.
 </p>
 
 @if (loading()) {
-  <p class="loading"><app-grain-loader [size]="28" label="Loading your rules" /> Loading…</p>
+  <p class="loading"><app-grain-loader [size]="28" label="Loading the rules" /> Loading…</p>
 }
 @if (error()) {
   <p class="msg error" role="alert">{{ error() }}</p>
 }
-@if (notice()) {
-  <p class="msg notice" role="status">{{ notice() }}</p>
-}
 
 <div class="cards">
-  @for (row of mine(); track row.key) {
-    @let rule = ruleFor(row.key);
+  @for (rule of rules(); track rule.key) {
     <section class="card">
-      <h3>{{ row.label }}</h3>
-      <p class="muted small">{{ rule?.description }}</p>
-
+      <h3>{{ rule.label }}</h3>
+      <p class="muted small">{{ rule.description }}</p>
       <p class="now">
-        Now: <b>{{ display(row.value) }}</b>
-        <span [class]="'badge ' + row.source">
-          {{ row.source === 'owner' ? 'Your choice' : 'Platform default' }}
-        </span>
+        Now: <b>{{ display(rule.value) }}</b>
       </p>
-
-      <div class="editor">
-        @switch (rule?.type) {
-          @case ('bool') {
-            <label class="switch">
-              <input type="checkbox" [name]="row.key" [(ngModel)]="draft[row.key]" />
-              {{ draft[row.key] ? 'Yes' : 'No' }}
-            </label>
-          }
-          @case ('int') {
-            <input
-              type="number"
-              class="narrow"
-              [name]="row.key"
-              [min]="rule?.min"
-              [max]="rule?.max"
-              [(ngModel)]="draft[row.key]"
-            />
-            <span class="muted small">{{ rule?.min }} - {{ rule?.max }}</span>
-          }
-          @case ('choice') {
-            <select [name]="row.key" [(ngModel)]="draft[row.key]">
-              @for (c of rule?.choices ?? []; track c) {
-                <option [value]="c">{{ c }}</option>
-              }
-            </select>
-          }
-        }
-        <button type="button" [disabled]="!changed(row)" (click)="save(row)">Save</button>
-        @if (row.source === 'owner') {
-          <button type="button" class="link" (click)="usePlatform(row)">
-            Use platform default
-          </button>
-        }
-      </div>
     </section>
   }
 </div>

@@ -69,87 +69,94 @@
   }
 </div>
 
-<!-- ================= Owner overrides (temporary) ================= -->
+<!-- ================= Owner overrides ================= -->
 <h2>An owner's own values</h2>
-<p class="muted">
-  Owners change their own values on their screen. Here an admin can look up or change them by owner
-  ID (or try <b>New test owner</b> with a made-up ID).
-</p>
-
-<form class="owner-pick" (ngSubmit)="loadOwner()">
-  <input
-    name="ownerId"
-    placeholder="Owner ID (UUID)"
-    autocomplete="off"
-    [(ngModel)]="ownerIdInput"
-  />
-  <button type="submit">Load</button>
-  <button type="button" class="secondary" (click)="newTestOwner()">New test owner</button>
-</form>
-
-@if (ownerId()) {
+@if (anyOverridable()) {
+  <h2>An owner's own values</h2>
   <p class="muted">
-    Owner <code>{{ ownerId() }}</code>
+    Owners change their own values on their screen. Here an admin can look up or change them by
+    owner ID (or try <b>New test owner</b> with a made-up ID).
   </p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Setting</th>
-          <th>Applies now</th>
-          <th>Owner's value</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of ownerSettings(); track row.key) {
-          @let r = rules(row.key);
+
+  <form class="owner-pick" (ngSubmit)="loadOwner()">
+    <input
+      name="ownerId"
+      placeholder="Owner ID (UUID)"
+      autocomplete="off"
+      [(ngModel)]="ownerIdInput"
+    />
+    <button type="submit">Load</button>
+    <button type="button" class="secondary" (click)="newTestOwner()">New test owner</button>
+  </form>
+
+  @if (ownerId()) {
+    <p class="muted">
+      Owner <code>{{ ownerId() }}</code>
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
           <tr>
-            <td>{{ row.label }}</td>
-            <td>
-              <b>{{ show(row.value) }}</b>
-              <span [class]="'badge ' + row.source">{{ sourceLabel(row.source) }}</span>
-            </td>
-            <td>
-              @switch (r?.type) {
-                @case ('bool') {
-                  <label class="switch">
+            <th>Setting</th>
+            <th>Applies now</th>
+            <th>Owner's value</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of ownerSettings(); track row.key) {
+            @let r = rules(row.key);
+            <tr>
+              <td>{{ row.label }}</td>
+              <td>
+                <b>{{ show(row.value) }}</b>
+                <span [class]="'badge ' + row.source">{{ sourceLabel(row.source) }}</span>
+              </td>
+              <td>
+                @switch (r?.type) {
+                  @case ('bool') {
+                    <label class="switch">
+                      <input
+                        type="checkbox"
+                        [name]="'owner-' + row.key"
+                        [(ngModel)]="ownerDraft[row.key]"
+                      />
+                      {{ ownerDraft[row.key] ? 'Yes' : 'No' }}
+                    </label>
+                  }
+                  @case ('int') {
                     <input
-                      type="checkbox"
+                      type="number"
+                      class="narrow"
                       [name]="'owner-' + row.key"
+                      [min]="r?.min"
+                      [max]="r?.max"
                       [(ngModel)]="ownerDraft[row.key]"
                     />
-                    {{ ownerDraft[row.key] ? 'Yes' : 'No' }}
-                  </label>
+                  }
+                  @case ('choice') {
+                    <select [name]="'owner-' + row.key" [(ngModel)]="ownerDraft[row.key]">
+                      @for (c of r?.choices ?? []; track c) {
+                        <option [value]="c">{{ c }}</option>
+                      }
+                    </select>
+                  }
                 }
-                @case ('int') {
-                  <input
-                    type="number"
-                    class="narrow"
-                    [name]="'owner-' + row.key"
-                    [min]="r?.min"
-                    [max]="r?.max"
-                    [(ngModel)]="ownerDraft[row.key]"
-                  />
+              </td>
+              <td class="actions">
+                <button type="button" (click)="saveOwner(row)">Save</button>
+                @if (row.source === 'owner') {
+                  <button type="button" class="link" (click)="resetOwner(row)">Remove</button>
                 }
-                @case ('choice') {
-                  <select [name]="'owner-' + row.key" [(ngModel)]="ownerDraft[row.key]">
-                    @for (c of r?.choices ?? []; track c) {
-                      <option [value]="c">{{ c }}</option>
-                    }
-                  </select>
-                }
-              }
-            </td>
-            <td class="actions">
-              <button type="button" (click)="saveOwner(row)">Save</button>
-              @if (row.source === 'owner') {
-                <button type="button" class="link" (click)="resetOwner(row)">Remove</button>
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+} @else {
+  <p class="muted">
+    Every rule applies to all owners, so there are no per-owner values to manage here.
+  </p>
 }

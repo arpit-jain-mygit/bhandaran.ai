@@ -2,10 +2,12 @@
 # Tests for platform settings (M2): default -> platform -> owner.
 # Each test resets what it changes, so tests don't affect each other.
 # ---------------------------------------------------------------
+import dataclasses
 import uuid
 
 import pytest
 
+from app.platform_settings import SETTINGS
 from tests.conftest import ADMIN_HEADERS, OWNER_HEADERS, RENTER_HEADERS, TEST_USERS
 
 TIMEOUT = "renter_confirmation_timeout_days"
@@ -23,6 +25,13 @@ def reset_platform(client):
     yield
     for key in (TIMEOUT, CONFIRM, ON_TIMEOUT):
         client.delete(f"/api/settings/{key}", headers=ADMIN_HEADERS)
+
+
+@pytest.fixture
+def overridable(monkeypatch):
+    """Booking rules are not owner-changeable; switch the flag on for override tests."""
+    for key, setting in SETTINGS.items():
+        monkeypatch.setitem(SETTINGS, key, dataclasses.replace(setting, owner_can_override=True))
 
 
 # ---------- reading ----------
@@ -88,7 +97,7 @@ def test_unknown_setting_returns_404(client):
 # ---------- owner overrides ----------
 
 
-def test_owner_override_wins_over_platform_and_default(client, reset_platform):
+def test_owner_override_wins_over_platform_and_default(client, reset_platform, overridable):
     owner = uuid.uuid4()
     client.put(f"/api/settings/{TIMEOUT}", json={"value": 5}, headers=ADMIN_HEADERS)
 
@@ -107,7 +116,7 @@ def test_owner_override_wins_over_platform_and_default(client, reset_platform):
     )
 
 
-def test_one_owners_override_does_not_affect_another(client):
+def test_one_owners_override_does_not_affect_another(client, overridable):
     first, second = uuid.uuid4(), uuid.uuid4()
     client.put(f"/api/settings/owners/{first}/{TIMEOUT}", json={"value": 10}, headers=ADMIN_HEADERS)
 
@@ -115,7 +124,7 @@ def test_one_owners_override_does_not_affect_another(client):
     assert others[TIMEOUT]["source"] == "default"
 
 
-def test_removing_an_owner_override_falls_back(client):
+def test_removing_an_owner_override_falls_back(client, overridable):
     owner = uuid.uuid4()
     url = f"/api/settings/owners/{owner}/{ON_TIMEOUT}"
     client.put(url, json={"value": "AUTO_CONFIRM"}, headers=ADMIN_HEADERS)
@@ -128,7 +137,7 @@ def test_removing_an_owner_override_falls_back(client):
     )
 
 
-def test_changing_an_owner_value_twice_keeps_one_row(client):
+def test_changing_an_owner_value_twice_keeps_one_row(client, overridable):
     owner = uuid.uuid4()
     url = f"/api/settings/owners/{owner}/{TIMEOUT}"
     client.put(url, json={"value": 4}, headers=ADMIN_HEADERS)
@@ -138,10 +147,27 @@ def test_changing_an_owner_value_twice_keeps_one_row(client):
     assert effective[TIMEOUT]["value"] == 9
 
 
+def test_owners_cannot_change_booking_rules(client):
+    # Booking rules are set for everyone by admins, so owners are refused.
+    url = f"/api/settings/me/{TIMEOUT}"
+    assert client.put(url, json={"value": 12}, headers=OWNER_HEADERS).status_code == 403
+
+    owner_id = TEST_USERS["owner"].id
+    admin_url = f"/api/settings/owners/{owner_id}/{TIMEOUT}"
+    assert client.put(admin_url, json={"value": 12}, headers=ADMIN_HEADERS).status_code == 403
+
+
+def test_owners_see_booking_rules_from_the_platform(client, reset_platform):
+    client.put(f"/api/settings/{TIMEOUT}", json={"value": 5}, headers=ADMIN_HEADERS)
+
+    mine = by_key(client.get("/api/settings/me", headers=OWNER_HEADERS).json())
+    assert (mine[TIMEOUT]["value"], mine[TIMEOUT]["source"]) == (5, "platform")
+
+
 # ---------- the logged-in owner's own values ----------
 
 
-def test_owner_sets_and_removes_their_own_value(client):
+def test_owner_sets_and_removes_their_own_value(client, overridable):
     url = f"/api/settings/me/{TIMEOUT}"
 
     mine = by_key(client.put(url, json={"value": 12}, headers=OWNER_HEADERS).json())

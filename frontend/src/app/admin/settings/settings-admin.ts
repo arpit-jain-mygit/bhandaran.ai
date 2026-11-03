@@ -33,6 +33,10 @@ export class SettingsAdmin implements OnInit {
   private readonly api = inject(SettingsService);
 
   protected readonly settings = signal<Setting[]>([]);
+  /** True when at least one rule can be changed per owner. */
+  protected anyOverridable(): boolean {
+    return this.settings().some((setting) => setting.owner_can_override);
+  }
   protected readonly loading = signal(true);
   protected readonly error = signal('');
   protected readonly notice = signal('');

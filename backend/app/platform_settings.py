@@ -55,6 +55,8 @@ SETTINGS: dict[str, SettingDef] = {
             "the renter must confirm it via a link before it is final.",
             type="bool",
             default=True,
+            # Booking rules are platform-wide: owners can't change them.
+            owner_can_override=False,
         ),
         SettingDef(
             key="renter_confirmation_timeout_days",
@@ -64,6 +66,8 @@ SETTINGS: dict[str, SettingDef] = {
             default=3,
             min=1,
             max=30,
+            # Booking rules are platform-wide: owners can't change them.
+            owner_can_override=False,
         ),
         SettingDef(
             key="on_timeout_action",
@@ -73,6 +77,8 @@ SETTINGS: dict[str, SettingDef] = {
             type="choice",
             default="FLAG_UNVERIFIED",
             choices=("AUTO_CONFIRM", "FLAG_UNVERIFIED"),
+            # Booking rules are platform-wide: owners can't change them.
+            owner_can_override=False,
         ),
         SettingDef(
             key="allow_stock_in_before_confirmation",
@@ -81,6 +87,8 @@ SETTINGS: dict[str, SettingDef] = {
             "renter's confirmation is still pending.",
             type="bool",
             default=True,
+            # Booking rules are platform-wide: owners can't change them.
+            owner_can_override=False,
         ),
     ]
 }
