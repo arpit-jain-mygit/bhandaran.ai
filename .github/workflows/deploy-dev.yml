@@ -1,0 +1,106 @@
+# ---------------------------------------------------------------
+# Deploy to dev: runs automatically after the "ci" workflow passes
+# on main (or manually from the Actions tab).
+#
+#   API -> build Linux arm64 zip -> upload to Lambda
+#   Web -> ng build -> upload to S3 -> clear CloudFront cache
+#   Smoke test -> GET /api/health through CloudFront must be "ok"
+#
+# Uses the narrow "bhandaran-dev-github-deploy" role (OIDC, no keys).
+# Repo variables needed: AWS_DEV_DEPLOY_ROLE_ARN, DEV_API_FUNCTION,
+# DEV_WEB_BUCKET, DEV_CLOUDFRONT_ID, DEV_WEB_URL
+# ---------------------------------------------------------------
+name: deploy-dev
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# Never run two deploys at the same time; the newer one waits.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ap-south-1
+
+jobs:
+  deploy:
+    # Only deploy commits whose CI passed (or manual runs).
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      # Check out exactly the commit that CI tested.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # ---------- Build ----------
+      - name: Build API zip
+        run: ./backend/scripts/build_lambda.sh
+
+      - name: Build web app
+        working-directory: frontend
+        run: |
+          npm ci
+          npx ng build
+
+      # ---------- Log in to AWS ----------
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEV_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ---------- Deploy API ----------
+      - name: Upload API code to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ vars.DEV_API_FUNCTION }}" \
+            --zip-file fileb://backend/dist/lambda.zip \
+            --output text --query LastUpdateStatus
+          aws lambda wait function-updated-v2 --function-name "${{ vars.DEV_API_FUNCTION }}"
+
+      # ---------- Deploy web ----------
+      # Hashed files (main-ABC123.js) never change -> cache for a year.
+      # index.html points at the newest files -> never cache it.
+      - name: Upload web files to S3
+        run: |
+          aws s3 sync frontend/dist/frontend/browser "s3://${{ vars.DEV_WEB_BUCKET }}" \
+            --delete --exclude index.html \
+            --cache-control "public,max-age=31536000,immutable"
+          aws s3 cp frontend/dist/frontend/browser/index.html "s3://${{ vars.DEV_WEB_BUCKET }}/index.html" \
+            --cache-control "no-cache"
+
+      - name: Clear CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.DEV_CLOUDFRONT_ID }}" \
+            --paths "/*" --output text --query Invalidation.Id
+
+      # ---------- Verify ----------
+      - name: Smoke test
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            body=$(curl -s -m 30 "${{ vars.DEV_WEB_URL }}/api/health" || true)
+            echo "attempt $attempt: $body"
+            if echo "$body" | grep -q '"status":"ok"'; then exit 0; fi
+            sleep 10
+          done
+          echo "Health check failed"; exit 1

@@ -97,26 +97,36 @@ resource "aws_s3_bucket_cors_configuration" "this" {
   }
 }
 
-# Refuse any request that is not over HTTPS.
+# Bucket policy = "refuse any request that is not over HTTPS"
+# plus any extra statements passed in (e.g. "CloudFront may read").
+data "aws_iam_policy_document" "bucket" {
+  source_policy_documents = var.extra_policy_documents
+
+  statement {
+    sid     = "DenyInsecureTransport"
+    effect  = "Deny"
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.this.arn,
+      "${aws_s3_bucket.this.arn}/*",
+    ]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
 resource "aws_s3_bucket_policy" "this" {
   bucket = aws_s3_bucket.this.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Sid       = "DenyInsecureTransport"
-      Effect    = "Deny"
-      Principal = "*"
-      Action    = "s3:*"
-      Resource = [
-        aws_s3_bucket.this.arn,
-        "${aws_s3_bucket.this.arn}/*",
-      ]
-      Condition = {
-        Bool = { "aws:SecureTransport" = "false" }
-      }
-    }]
-  })
+  policy = data.aws_iam_policy_document.bucket.json
 
   # The public access block must exist before a bucket policy is attached.
   depends_on = [aws_s3_bucket_public_access_block.this]

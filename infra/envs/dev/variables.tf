@@ -26,3 +26,10 @@ variable "dsql_daily_dpu_threshold" {
   type        = number
   default     = 10000
 }
+
+# Repository whose main branch may deploy app code to dev.
+variable "github_repo" {
+  description = "GitHub repository in owner/name form"
+  type        = string
+  default     = "arpit-jain-mygit/bhandaran.ai"
+}

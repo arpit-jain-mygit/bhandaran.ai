@@ -22,10 +22,13 @@ infra/
 │   ├── dsql/           Aurora DSQL cluster
 │   ├── s3_bucket/      private, encrypted bucket (warehouse photos)
 │   ├── github_oidc/    GitHub Actions -> AWS roles (no stored keys)
-│   └── cost_alarms/    monthly budget + DSQL daily DPU alarm
+│   ├── cost_alarms/    monthly budget + DSQL daily DPU alarm
+│   ├── api_lambda/     FastAPI on Lambda + API Gateway HTTP API
+│   ├── web_hosting/    S3 + CloudFront (UI at /, API at /api/*)
+│   └── github_deploy_role/  narrow role for app deploys
 └── envs/
     ├── shared/         once per account: CI roles, monthly budget
-    ├── dev/            DSQL, photos bucket, DPU alarm
+    ├── dev/            DSQL, photos bucket, DPU alarm, hosting, deploy role
     └── prod/           same as dev, safer settings (applied at M14)
 ```
 
@@ -36,6 +39,7 @@ infra/
 | bootstrap | `bhandaran-tfstate-<account>` S3 bucket | Versioned, encrypted, HTTPS only, `prevent_destroy` |
 | shared | `bhandaran-github-plan` role (read-only), `bhandaran-github-apply` role (admin, main branch only), monthly budget | Reuses the account's existing GitHub OIDC provider |
 | dev | DSQL cluster `bhandaran-dev`, bucket `bhandaran-dev-photos-<account>`, SNS topic + daily DPU alarm | No VPC/NAT needed: DSQL uses IAM auth |
+| dev (M0b) | Lambda `bhandaran-dev-api` + HTTP API (10 req/s, burst 20), web bucket, CloudFront distribution + SPA function, `bhandaran-dev-github-deploy` role | Dev URL: `terraform output web_url` |
 | prod | Same as dev with deletion protection and no `force_destroy` | **Not applied in T0** |
 
 ## Prerequisites
@@ -113,6 +117,7 @@ Workflow: [.github/workflows/terraform.yml](../.github/workflows/terraform.yml)
 
 - **Pull request**: `fmt` check and `validate` for all stacks; `plan` for dev using the read-only role.
 - **Manual run** (Actions -> terraform -> Run workflow, on `main`): `apply` the chosen stack using the admin role.
+- **App deploy** ([deploy-dev.yml](../.github/workflows/deploy-dev.yml)): after `ci` passes on `main`, uploads the API to Lambda and the web build to S3, clears CloudFront, smoke-tests `/api/health`. Terraform is not involved: Lambda code is ignored by Terraform after the first apply.
 
 Set these repository variables (Settings -> Secrets and variables -> Actions -> Variables):
 
@@ -122,6 +127,11 @@ Set these repository variables (Settings -> Secrets and variables -> Actions -> 
 | `AWS_APPLY_ROLE_ARN` | `github_apply_role_arn` output of shared |
 | `TF_STATE_BUCKET` | bootstrap `state_bucket_name` output |
 | `ALERT_EMAIL` | email for cost alerts |
+| `AWS_DEV_DEPLOY_ROLE_ARN` | dev `github_deploy_role_arn` output |
+| `DEV_API_FUNCTION` | dev `api_function_name` output |
+| `DEV_WEB_BUCKET` | dev `web_bucket_name` output |
+| `DEV_CLOUDFRONT_ID` | dev `cloudfront_distribution_id` output |
+| `DEV_WEB_URL` | dev `web_url` output |
 
 ## Cost
 
@@ -130,6 +140,7 @@ Set these repository variables (Settings -> Secrets and variables -> Actions -> 
 | DSQL (idle / light dev use) | ~$0 (free tier: 100k DPU + 1 GB) |
 | S3 (state + a few photos) | < $0.10 |
 | SNS email, CloudWatch alarm, Budget | ~$0 (within free tiers) |
+| Lambda, API Gateway, CloudFront (dev traffic) | ~$0-1 |
 | IAM / OIDC | free |
 
 The **monthly budget** (default $10) and **daily DPU alarm** (default 10,000 DPU/day) email you before costs grow.

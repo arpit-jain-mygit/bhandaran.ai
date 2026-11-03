@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------
+# Inputs for the api_lambda module.
+# ---------------------------------------------------------------
+
+# Used for the function, role, API and log group names.
+variable "name" {
+  description = "Name for the API, e.g. bhandaran-dev-api"
+  type        = string
+}
+
+# The Lambda function may connect only to this DSQL cluster.
+variable "dsql_cluster_arn" {
+  description = "ARN of the DSQL cluster the API connects to"
+  type        = string
+}
+
+# Environment variables for the app (DB_MODE, DSQL_ENDPOINT, ...).
+variable "environment" {
+  description = "Environment variables passed to the FastAPI app"
+  type        = map(string)
+  default     = {}
+}
+
+# More memory also gives more CPU (faster cold starts).
+variable "memory_mb" {
+  description = "Lambda memory in MB"
+  type        = number
+  default     = 512
+}
+
+# Steady requests per second allowed through API Gateway.
+variable "throttle_rate_per_second" {
+  description = "API Gateway steady-state request limit"
+  type        = number
+  default     = 10
+}
+
+# Short burst of requests allowed above the steady rate.
+variable "throttle_burst" {
+  description = "API Gateway burst request limit"
+  type        = number
+  default     = 20
+}

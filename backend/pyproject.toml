@@ -19,6 +19,7 @@ dependencies = [
     "aurora-dsql-sqlalchemy==1.3.0",  # AWS dialect: IAM auth + DSQL SQL rules
     "boto3==1.43.123",                # AWS SDK (credentials for DSQL)
     "pydantic-settings==2.16.2",      # settings from env vars / .env
+    "mangum==0.22.0",                 # runs FastAPI inside AWS Lambda
 ]
 
 # Extra tools only needed while developing and in CI.

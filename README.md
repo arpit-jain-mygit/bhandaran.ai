@@ -4,9 +4,14 @@ A marketplace that connects **godown owners** who rent out storage space with **
 
 ## Contents
 
+- [Dev environment](#dev-environment)
 - [Repository layout](#repository-layout)
 - [Quick start (local)](#quick-start-local)
 - [Plan](#plan)
+
+## Dev environment
+
+Live dev app (updated on every push to `main` after CI passes): **https://d242pewa183g00.cloudfront.net**
 
 ## Repository layout
 
@@ -15,7 +20,7 @@ A marketplace that connects **godown owners** who rent out storage space with **
 | `infra/` | Terraform for AWS (DSQL, S3, CI roles, cost alarms) | [infra/README.md](infra/README.md) |
 | `backend/` | FastAPI API + Alembic migrations | [backend/README.md](backend/README.md) |
 | `frontend/` | Angular web app | [frontend/README.md](frontend/README.md) |
-| `.github/workflows/` | CI: app checks (`ci.yml`), Terraform (`terraform.yml`) | |
+| `.github/workflows/` | `ci.yml` app checks, `deploy-dev.yml` deploy to dev, `terraform.yml` infra | |
 
 Stack: Angular · FastAPI · Aurora DSQL (PostgreSQL-compatible) · Terraform on AWS (ap-south-1).
 

@@ -9,6 +9,7 @@
 - [Migrations](#migrations)
 - [DSQL rules for migrations](#dsql-rules-for-migrations)
 - [Checks](#checks)
+- [Lambda build](#lambda-build)
 
 ## Layout
 
@@ -18,7 +19,9 @@ backend/
 │   ├── main.py          FastAPI app, CORS, router registration
 │   ├── config.py        settings from env vars / .env
 │   ├── db.py            engine for local Postgres or Aurora DSQL
-│   └── api/health.py    GET /api/health
+│   ├── api/health.py    GET /api/health
+│   └── lambda_handler.py  AWS Lambda entry (Mangum)
+├── scripts/build_lambda.sh  builds dist/lambda.zip (Linux arm64)
 ├── migrations/          Alembic (env.py handles DSQL rules)
 ├── tests/               pytest (no DB needed - fakes)
 └── pyproject.toml       dependencies, ruff, pytest config
@@ -104,3 +107,13 @@ Aurora DSQL is stricter than PostgreSQL. `migrations/env.py` runs in AUTOCOMMIT 
 ```bash
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/pytest -q
 ```
+
+## Lambda build
+
+In AWS the same app runs on Lambda (`app.lambda_handler.handler`). The CI deploy builds the zip; to build it yourself:
+
+```bash
+./scripts/build_lambda.sh
+```
+
+It downloads Linux arm64 wheels for Python 3.14 (not your Mac's), so the zip runs on Lambda.

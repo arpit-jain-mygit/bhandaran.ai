@@ -22,3 +22,11 @@ variable "cors_allowed_origins" {
   type        = list(string)
   default     = []
 }
+
+# Extra bucket policy statements as JSON documents (e.g. from an
+# aws_iam_policy_document), merged with the HTTPS-only rule.
+variable "extra_policy_documents" {
+  description = "Additional IAM policy JSON documents for the bucket policy"
+  type        = list(string)
+  default     = []
+}

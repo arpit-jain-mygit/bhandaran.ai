@@ -38,3 +38,10 @@ __pycache__/
 node_modules/
 dist/
 .angular/
+
+# Lambda build output (scripts/build_lambda.sh)
+backend/build/
+backend/dist/
+
+# Terraform placeholder zips (generated)
+.placeholder.zip

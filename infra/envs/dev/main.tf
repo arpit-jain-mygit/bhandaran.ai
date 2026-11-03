@@ -4,6 +4,8 @@
 #   - Aurora DSQL cluster (database)
 #   - Private S3 bucket for warehouse photos
 #   - Daily DSQL DPU cost alarm
+#   - Hosting (M0b): API on Lambda + Angular on S3, one CloudFront URL
+#   - Narrow GitHub deploy role for app releases
 # ---------------------------------------------------------------
 
 # Account ID makes the photo bucket name globally unique.
@@ -42,4 +44,44 @@ module "cost_alarms" {
   create_dpu_alarm         = true
   dsql_cluster_id          = module.dsql.identifier
   dsql_daily_dpu_threshold = var.dsql_daily_dpu_threshold
+}
+
+# ---------- Hosting (M0b) ----------
+
+# FastAPI on Lambda behind an API Gateway HTTP API.
+# CORS_ORIGINS is empty: the browser reaches UI and API through the
+# same CloudFront URL, so no cross-origin calls happen.
+module "api" {
+  source = "../../modules/api_lambda"
+
+  name             = "${local.name_prefix}-api"
+  dsql_cluster_arn = module.dsql.arn
+
+  environment = {
+    DB_MODE       = "dsql"
+    DSQL_ENDPOINT = module.dsql.endpoint
+    DSQL_USER     = "admin"
+    CORS_ORIGINS  = "[]"
+  }
+}
+
+# Angular build in S3 + CloudFront in front of both S3 and the API.
+module "web" {
+  source = "../../modules/web_hosting"
+
+  name          = local.name_prefix
+  bucket_name   = "${local.name_prefix}-web-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
+  api_domain    = module.api.api_domain
+}
+
+# Role the "deploy-dev" GitHub workflow uses on every push to main.
+module "github_deploy" {
+  source = "../../modules/github_deploy_role"
+
+  name                = "${local.name_prefix}-github-deploy"
+  github_repo         = var.github_repo
+  lambda_function_arn = module.api.function_arn
+  web_bucket_arn      = module.web.bucket_arn
+  distribution_arn    = module.web.distribution_arn
 }

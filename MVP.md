@@ -11,6 +11,7 @@ A marketplace that connects **godown owners** (who rent out storage space) with 
 - [Milestones](#milestones)
   - [T0 - Terraform foundation](#t0---terraform-foundation)
   - [M0 - App foundation](#m0---app-foundation)
+  - [M0b - Dev deploy](#m0b---dev-deploy)
   - [M1 - Master data](#m1---master-data)
   - [M2 - Platform config](#m2---platform-config)
   - [M3 - Login](#m3---login)
@@ -38,6 +39,7 @@ A marketplace that connects **godown owners** (who rent out storage space) with 
 |---|---|---|
 | T0 | Terraform foundation | ✅ |
 | M0 | App foundation | ✅ |
+| M0b | Dev deploy | ✅ |
 | M1 | Master data | ⬜ |
 | M2 | Platform config | ⬜ |
 | M3 | Login | ⬜ |
@@ -79,6 +81,21 @@ Status: ⬜ not started · 🟡 in progress · ✅ done
 **Done when:** Angular calls the FastAPI health API, and migrations run against dev DSQL.
 
 **Depends on:** T0
+
+### M0b - Dev deploy
+
+**Goal:** every change on `main` is live on a public dev URL.
+
+- FastAPI on AWS Lambda (Python 3.14, arm64) via Mangum, behind an API Gateway HTTP API (throttled)
+- Angular build in a private S3 bucket
+- One CloudFront URL: `/` serves the app, `/api/*` goes to the API (no CORS needed)
+- Angular deep links served via a CloudFront Function; security headers on
+- GitHub Actions `deploy-dev`: after CI passes on `main`, build, upload, clear cache, smoke test
+- Narrow deploy role (one Lambda, one bucket, one distribution)
+
+**Done when:** a push to `main` updates https://d242pewa183g00.cloudfront.net and its status card shows API ok, Database ok (dsql).
+
+**Depends on:** M0
 
 ### M1 - Master data
 
@@ -208,7 +225,7 @@ Status: ⬜ not started · 🟡 in progress · ✅ done
 ```
 T0  Terraform foundation
  ▼
-M0  App foundation
+M0  App foundation  ──► M0b Dev deploy
  ├──► M1 Master data ─────┐
  ├──► M2 Platform config  │
  └──► M3 Login            │
