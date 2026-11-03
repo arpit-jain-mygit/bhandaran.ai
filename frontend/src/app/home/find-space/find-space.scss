@@ -6,8 +6,17 @@
   background: var(--surface);
 }
 
+// Heading with the spinner beside it while lists load.
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 24px;
+  margin-bottom: 1rem;
+}
+
 h2 {
-  margin: 0 0 1rem;
+  margin: 0;
   font-size: 1.1rem;
 }
 

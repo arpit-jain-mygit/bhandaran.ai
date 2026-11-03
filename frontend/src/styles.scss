@@ -11,6 +11,12 @@
   --accent: #2f6fde;
   --good: #1f8a4c;
   --bad: #c8372d;
+
+  // Grain colours for the loading spinner.
+  --grain-wheat: #c8922a;
+  --grain-dal: #d8742a;
+  --grain-moong: #5f9a3b;
+  --grain-chana: #7d4f2c;
 }
 
 // Dark mode follows the operating system setting.
@@ -24,6 +30,11 @@
     --accent: #7aa7ff;
     --good: #4cc584;
     --bad: #ff7a70;
+
+    --grain-wheat: #e2b04f;
+    --grain-dal: #f08f45;
+    --grain-moong: #86c25c;
+    --grain-chana: #b98055;
   }
 }
 

@@ -175,3 +175,10 @@ tr.inactive td:not(.actions) {
   color: var(--muted);
   text-decoration: line-through;
 }
+
+// Spinner and its text side by side.
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}

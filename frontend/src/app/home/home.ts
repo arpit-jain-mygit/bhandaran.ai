@@ -7,6 +7,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of, startWith } from 'rxjs';
 
 import { Health, HealthService } from '../core/health.service';
+import { GrainLoader } from '../shared/grain-loader/grain-loader';
 import { FindSpace } from './find-space/find-space';
 
 // The three states the page can be in.
@@ -14,7 +15,7 @@ type HealthState = { kind: 'loading' } | { kind: 'loaded'; health: Health } | { 
 
 @Component({
   selector: 'app-home',
-  imports: [FindSpace],
+  imports: [FindSpace, GrainLoader],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

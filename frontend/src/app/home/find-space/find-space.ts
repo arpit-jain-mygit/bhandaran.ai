@@ -8,14 +8,15 @@
 // ---------------------------------------------------------------
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { Observable, finalize, forkJoin } from 'rxjs';
 
 import { apiErrorMessage } from '../../core/api-error';
 import { City, District, LookupItem, MasterDataService } from '../../core/master-data.service';
+import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 
 @Component({
   selector: 'app-find-space',
-  imports: [FormsModule],
+  imports: [FormsModule, GrainLoader],
   templateUrl: './find-space.html',
   styleUrl: './find-space.scss',
 })
@@ -30,6 +31,9 @@ export class FindSpace implements OnInit {
   protected readonly stockTypes = signal<LookupItem[]>([]);
   protected readonly error = signal('');
 
+  // How many list requests are still running (> 0 shows the spinner).
+  protected readonly pending = signal(0);
+
   // Current choices.
   protected stateId = '';
   protected districtId = '';
@@ -39,11 +43,13 @@ export class FindSpace implements OnInit {
 
   ngOnInit(): void {
     // Load the three independent lists in parallel.
-    forkJoin({
-      states: this.api.list('states'),
-      storageTypes: this.api.list('storage-types'),
-      stockTypes: this.api.list('stock-types'),
-    }).subscribe({
+    this.track(
+      forkJoin({
+        states: this.api.list('states'),
+        storageTypes: this.api.list('storage-types'),
+        stockTypes: this.api.list('stock-types'),
+      }),
+    ).subscribe({
       next: (lists) => {
         this.states.set(lists.states);
         this.storageTypes.set(lists.storageTypes);
@@ -63,7 +69,7 @@ export class FindSpace implements OnInit {
     if (!stateId) {
       return;
     }
-    this.api.listDistricts(stateId).subscribe({
+    this.track(this.api.listDistricts(stateId)).subscribe({
       next: (districts) => this.districts.set(districts),
       error: (error) => this.error.set(apiErrorMessage(error)),
     });
@@ -77,9 +83,15 @@ export class FindSpace implements OnInit {
     if (!districtId) {
       return;
     }
-    this.api.listCities({ districtId }).subscribe({
+    this.track(this.api.listCities({ districtId })).subscribe({
       next: (cities) => this.cities.set(cities),
       error: (error) => this.error.set(apiErrorMessage(error)),
     });
+  }
+
+  /** Count a request as running until it finishes (success or error). */
+  private track<T>(request: Observable<T>): Observable<T> {
+    this.pending.update((n) => n + 1);
+    return request.pipe(finalize(() => this.pending.update((n) => n - 1)));
   }
 }

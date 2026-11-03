@@ -1,6 +1,11 @@
 <!-- Find space: dropdowns filled from master data (search comes in M7). -->
 <section class="card">
-  <h2>Find storage space</h2>
+  <div class="title">
+    <h2>Find storage space</h2>
+    @if (pending() > 0) {
+      <app-grain-loader [size]="28" label="Loading options" />
+    }
+  </div>
 
   @if (error()) {
     <p class="error" role="alert">{{ error() }}</p>

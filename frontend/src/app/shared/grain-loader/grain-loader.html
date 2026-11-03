@@ -1,0 +1,41 @@
+<!-- Grain ring spinner. role=status: screen readers announce the label. -->
+<span class="loader" role="status" [style.width.px]="size()" [style.height.px]="size()">
+  <svg class="ring" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+    @for (g of grains; track g.angle) {
+      <!-- Outer group: move the grain to its spot on the ring. -->
+      <g [attr.transform]="'rotate(' + g.angle + ' 24 24) translate(24 7)'">
+        <!-- Inner group: the grain itself, animated in turn. -->
+        <g [class]="'grain ' + g.kind" [style.animation-delay]="g.delay">
+          @switch (g.kind) {
+            @case ('wheat') {
+              <!-- Wheat: plump oval with a centre crease -->
+              <ellipse rx="3" ry="4.9" />
+              <line class="crease" x1="0" y1="-3.2" x2="0" y2="3.2" />
+            }
+            @case ('moong') {
+              <!-- Moong (green gram): glossy green capsule with a long white "eye" -->
+              <ellipse class="body" rx="2.4" ry="3.9" />
+              <ellipse class="hilum" cx="1.45" rx="0.45" ry="2.2" />
+              <ellipse class="shine" cx="-1" cy="-1.6" rx="0.45" ry="0.9" />
+            }
+            @case ('dal') {
+              <!-- Masoor dal: flat, matte, oval split lentil with a lighter face -->
+              <ellipse class="body" rx="3.4" ry="2.5" />
+              <ellipse class="face" rx="2.3" ry="1.5" />
+            }
+            @case ('chana') {
+              <!-- Kala chana (chickpea): brown, with a pointed beak and a wrinkle -->
+              <path
+                class="body"
+                d="M0,-3.9 C1.3,-3.2 3.1,-2 3.1,0.4 C3.1,2.7 1.5,3.5 0,3.5 C-1.6,3.5 -3.1,2.5 -3.1,0.3 C-3.1,-2 -1.4,-3 0,-3.9 Z"
+              />
+              <path class="wrinkle" d="M-1.7,0.2 Q0,1.3 1.7,0" />
+              <ellipse class="shine" cx="-1.2" cy="-1" rx="0.5" ry="0.8" />
+            }
+          }
+        </g>
+      </g>
+    }
+  </svg>
+  <span class="visually-hidden">{{ label() }}</span>
+</span>

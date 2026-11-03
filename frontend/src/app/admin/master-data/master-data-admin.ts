@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 
 import { AdminKeyStore } from '../../core/admin-key';
+import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 import { apiErrorMessage } from '../../core/api-error';
 import {
   District,
@@ -48,7 +49,7 @@ export const TABS: Tab[] = [
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [FormsModule],
+  imports: [FormsModule, GrainLoader],
   templateUrl: './master-data-admin.html',
   styleUrl: './master-data-admin.scss',
 })

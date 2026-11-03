@@ -110,7 +110,13 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="3" class="muted">{{ loading() ? 'Loading…' : 'Nothing here yet.' }}</td>
+            <td colspan="3" class="muted">
+              @if (loading()) {
+                <span class="loading"><app-grain-loader [size]="28" /> Loading…</span>
+              } @else {
+                Nothing here yet.
+              }
+            </td>
           </tr>
         }
       </tbody>
@@ -178,7 +184,13 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="5" class="muted">{{ loading() ? 'Loading…' : 'Nothing here yet.' }}</td>
+            <td colspan="5" class="muted">
+              @if (loading()) {
+                <span class="loading"><app-grain-loader [size]="28" /> Loading…</span>
+              } @else {
+                Nothing here yet.
+              }
+            </td>
           </tr>
         }
       </tbody>

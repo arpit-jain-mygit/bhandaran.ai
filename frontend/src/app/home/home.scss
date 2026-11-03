@@ -49,3 +49,10 @@ dd {
 .muted {
   color: var(--muted);
 }
+
+// Spinner and its text side by side.
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}

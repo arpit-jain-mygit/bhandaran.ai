@@ -9,7 +9,9 @@
 
     @if (s.kind === 'loading') {
       <!-- Waiting for the API to answer -->
-      <p class="muted" data-testid="status">Checking API…</p>
+      <p class="muted loading" data-testid="status">
+        <app-grain-loader [size]="28" label="Checking API" /> Checking API…
+      </p>
     } @else if (s.kind === 'loaded') {
       <!-- API answered: show API + database status -->
       <dl>
