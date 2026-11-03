@@ -39,20 +39,42 @@
   <p class="msg notice" role="status">{{ notice() }}</p>
 }
 
-@if (tab() === 'cities') {
-  <!-- ================= Cities tab ================= -->
-  <label class="state-picker">
-    State
-    <select name="state" [ngModel]="stateId()" (ngModelChange)="selectState($event)">
-      @for (s of states(); track s.id) {
-        <option [value]="s.id">{{ s.name }}</option>
-      }
-    </select>
-  </label>
+@if (isPlaceTab()) {
+  <!-- ============ Districts / Cities & Towns tabs ============ -->
+  <div class="pickers">
+    <label>
+      State
+      <select name="state" [ngModel]="stateId()" (ngModelChange)="selectState($event)">
+        @for (s of states(); track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </label>
+
+    @if (tab() === 'cities') {
+      <label>
+        District
+        <select name="district" [ngModel]="districtId()" (ngModelChange)="selectDistrict($event)">
+          @for (d of districts(); track d.id) {
+            <option [value]="d.id">{{ d.name }}{{ d.is_active ? '' : ' (disabled)' }}</option>
+          } @empty {
+            <option value="">No districts - add one on the Districts tab</option>
+          }
+        </select>
+      </label>
+    }
+  </div>
 
   <form class="add" (ngSubmit)="add()">
-    <input name="newName" placeholder="New city name" required [(ngModel)]="newName" />
-    <button type="submit" [disabled]="!newName.trim()">Add city</button>
+    <input
+      name="newName"
+      required
+      [placeholder]="tab() === 'districts' ? 'New district name' : 'New city / town name'"
+      [(ngModel)]="newName"
+    />
+    <button type="submit" [disabled]="!newName.trim() || (tab() === 'cities' && !districtId())">
+      {{ tab() === 'districts' ? 'Add district' : 'Add city / town' }}
+    </button>
   </form>
 
   <!-- Wrapper scrolls sideways on narrow phones; the page itself doesn't. -->
@@ -66,29 +88,29 @@
         </tr>
       </thead>
       <tbody>
-        @for (c of cities(); track c.id) {
-          <tr [class.inactive]="!c.is_active">
-            @if (editingId() === c.id) {
+        @for (p of places(); track p.id) {
+          <tr [class.inactive]="!p.is_active">
+            @if (editingId() === p.id) {
               <td><input name="editName" [(ngModel)]="editName" /></td>
-              <td>{{ c.is_active ? 'Active' : 'Disabled' }}</td>
+              <td>{{ p.is_active ? 'Active' : 'Disabled' }}</td>
               <td class="actions">
-                <button type="button" (click)="saveEdit(c.id)">Save</button>
+                <button type="button" (click)="saveEdit(p.id)">Save</button>
                 <button type="button" class="link" (click)="cancelEdit()">Cancel</button>
               </td>
             } @else {
-              <td>{{ c.name }}</td>
-              <td>{{ c.is_active ? 'Active' : 'Disabled' }}</td>
+              <td>{{ p.name }}</td>
+              <td>{{ p.is_active ? 'Active' : 'Disabled' }}</td>
               <td class="actions">
-                <button type="button" class="link" (click)="startEdit(c)">Edit</button>
-                <button type="button" class="link" (click)="toggleActive(c)">
-                  {{ c.is_active ? 'Disable' : 'Enable' }}
+                <button type="button" class="link" (click)="startEdit(p)">Edit</button>
+                <button type="button" class="link" (click)="toggleActive(p)">
+                  {{ p.is_active ? 'Disable' : 'Enable' }}
                 </button>
               </td>
             }
           </tr>
         } @empty {
           <tr>
-            <td colspan="3" class="muted">{{ loading() ? 'Loading…' : 'No cities yet.' }}</td>
+            <td colspan="3" class="muted">{{ loading() ? 'Loading…' : 'Nothing here yet.' }}</td>
           </tr>
         }
       </tbody>

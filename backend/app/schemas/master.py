@@ -44,11 +44,33 @@ class LookupOut(BaseModel):
     is_active: bool
 
 
-# ---------- Cities (belong to a state) ----------
+# ---------- Districts (belong to a state) ----------
+
+
+class DistrictCreate(BaseModel):
+    state_id: uuid.UUID
+    name: Name
+
+
+class DistrictUpdate(BaseModel):
+    name: Name | None = None
+    is_active: bool | None = None
+
+
+class DistrictOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    state_id: uuid.UUID
+    name: str
+    is_active: bool
+
+
+# ---------- Cities / towns (belong to a district) ----------
 
 
 class CityCreate(BaseModel):
-    state_id: uuid.UUID
+    district_id: uuid.UUID
     name: Name
 
 
@@ -61,6 +83,7 @@ class CityOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    state_id: uuid.UUID
+    district_id: uuid.UUID
+    state_id: uuid.UUID  # derived from the district, for convenience
     name: str
     is_active: bool

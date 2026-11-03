@@ -6,9 +6,15 @@
 #   PATCH /api/master/{kind}/{id}        edit / disable [admin]
 #     kind = stock-types | storage-types | units | states
 #
-#   GET   /api/master/cities?state_id=   list cities (optionally of one state)
-#   POST  /api/master/cities             add            [admin]
-#   PATCH /api/master/cities/{id}        edit / disable [admin]
+#   GET   /api/master/districts?state_id=          list districts
+#   POST  /api/master/districts                    add            [admin]
+#   PATCH /api/master/districts/{id}               edit / disable [admin]
+#
+#   GET   /api/master/cities?district_id=&state_id= list cities / towns
+#   POST  /api/master/cities                       add            [admin]
+#   PATCH /api/master/cities/{id}                  edit / disable [admin]
+#
+# Location hierarchy: state > district > city / town.
 #
 # Reads are public (dropdowns need them). Writes need the admin key.
 # Nothing is ever deleted: disable with {"is_active": false}.
@@ -23,11 +29,14 @@ from sqlalchemy.orm import Session
 
 from app.auth import require_admin
 from app.db import get_session
-from app.models import City, State, StockType, StorageType, Unit
+from app.models import City, District, State, StockType, StorageType, Unit
 from app.schemas.master import (
     CityCreate,
     CityOut,
     CityUpdate,
+    DistrictCreate,
+    DistrictOut,
+    DistrictUpdate,
     LookupCreate,
     LookupOut,
     LookupUpdate,
@@ -80,18 +89,82 @@ def commit_or_409(session: Session, conflict_message: str) -> None:
         raise
 
 
-# ---------- cities (declared first so "/cities" isn't read as a {kind}) ----------
+# ---------- districts and cities ----------
+# (declared before "/{kind}" so "/districts" and "/cities" aren't
+# mistaken for a {kind})
+
+
+def apply_changes(row, body) -> None:
+    """Copy only the fields the client actually sent (PATCH semantics)."""
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(row, field, value)
+
+
+@router.get("/districts", response_model=list[DistrictOut])
+def list_districts(
+    session: DbSession,
+    state_id: uuid.UUID | None = None,
+    include_inactive: bool = False,
+):
+    query = select(District).order_by(District.name)
+    if state_id is not None:
+        query = query.where(District.state_id == state_id)
+    if not include_inactive:
+        query = query.where(District.is_active.is_(True))
+    return session.scalars(query).all()
+
+
+@router.post(
+    "/districts",
+    response_model=DistrictOut,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[AdminOnly],
+)
+def create_district(body: DistrictCreate, session: DbSession):
+    if session.get(State, body.state_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "State not found")
+
+    # Names are compared case-insensitively ("indore" == "Indore").
+    duplicate = session.scalar(
+        select(District.id).where(
+            District.state_id == body.state_id, func.lower(District.name) == body.name.lower()
+        )
+    )
+    if duplicate:
+        raise HTTPException(status.HTTP_409_CONFLICT, "District already exists in this state")
+
+    district = District(state_id=body.state_id, name=body.name)
+    session.add(district)
+    commit_or_409(session, "District already exists in this state")
+    session.refresh(district)
+    return district
+
+
+@router.patch("/districts/{district_id}", response_model=DistrictOut, dependencies=[AdminOnly])
+def update_district(district_id: uuid.UUID, body: DistrictUpdate, session: DbSession):
+    district = session.get(District, district_id)
+    if district is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "District not found")
+
+    apply_changes(district, body)
+    commit_or_409(session, "District already exists in this state")
+    session.refresh(district)
+    return district
 
 
 @router.get("/cities", response_model=list[CityOut])
 def list_cities(
     session: DbSession,
+    district_id: uuid.UUID | None = None,
     state_id: uuid.UUID | None = None,
     include_inactive: bool = False,
 ):
-    query = select(City).order_by(City.name)
+    # Join to district so we can filter by state and return state_id.
+    query = select(City).join(City.district).order_by(City.name)
+    if district_id is not None:
+        query = query.where(City.district_id == district_id)
     if state_id is not None:
-        query = query.where(City.state_id == state_id)
+        query = query.where(District.state_id == state_id)
     if not include_inactive:
         query = query.where(City.is_active.is_(True))
     return session.scalars(query).all()
@@ -104,21 +177,20 @@ def list_cities(
     dependencies=[AdminOnly],
 )
 def create_city(body: CityCreate, session: DbSession):
-    if session.get(State, body.state_id) is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "State not found")
+    if session.get(District, body.district_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "District not found")
 
-    # Names are compared case-insensitively ("indore" == "Indore").
     duplicate = session.scalar(
         select(City.id).where(
-            City.state_id == body.state_id, func.lower(City.name) == body.name.lower()
+            City.district_id == body.district_id, func.lower(City.name) == body.name.lower()
         )
     )
     if duplicate:
-        raise HTTPException(status.HTTP_409_CONFLICT, "City already exists in this state")
+        raise HTTPException(status.HTTP_409_CONFLICT, "City / town already exists in this district")
 
-    city = City(state_id=body.state_id, name=body.name)
+    city = City(district_id=body.district_id, name=body.name)
     session.add(city)
-    commit_or_409(session, "City already exists in this state")
+    commit_or_409(session, "City / town already exists in this district")
     session.refresh(city)
     return city
 
@@ -127,12 +199,10 @@ def create_city(body: CityCreate, session: DbSession):
 def update_city(city_id: uuid.UUID, body: CityUpdate, session: DbSession):
     city = session.get(City, city_id)
     if city is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "City not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "City / town not found")
 
-    # exclude_unset: only change fields the client actually sent.
-    for field, value in body.model_dump(exclude_unset=True).items():
-        setattr(city, field, value)
-    commit_or_409(session, "City already exists in this state")
+    apply_changes(city, body)
+    commit_or_409(session, "City / town already exists in this district")
     session.refresh(city)
     return city
 
@@ -171,8 +241,7 @@ def update_item(kind: str, item_id: uuid.UUID, body: LookupUpdate, session: DbSe
     if item is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Item not found")
 
-    for field, value in body.model_dump(exclude_unset=True).items():
-        setattr(item, field, value)
+    apply_changes(item, body)
     commit_or_409(session, "Conflicting change")
     session.refresh(item)
     return item

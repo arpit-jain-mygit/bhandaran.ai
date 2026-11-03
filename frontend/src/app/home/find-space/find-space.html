@@ -18,9 +18,24 @@
     </label>
 
     <label>
-      City
-      <select name="city" [(ngModel)]="cityId" [disabled]="!stateId">
-        <option value="">{{ stateId ? 'Select city' : 'Pick a state first' }}</option>
+      District
+      <select
+        name="district"
+        [ngModel]="districtId"
+        (ngModelChange)="onDistrictChange($event)"
+        [disabled]="!stateId"
+      >
+        <option value="">{{ stateId ? 'Select district' : 'Pick a state first' }}</option>
+        @for (d of districts(); track d.id) {
+          <option [value]="d.id">{{ d.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      City / Town
+      <select name="city" [(ngModel)]="cityId" [disabled]="!districtId">
+        <option value="">{{ districtId ? 'Select city / town' : 'Pick a district first' }}</option>
         @for (c of cities(); track c.id) {
           <option [value]="c.id">{{ c.name }}</option>
         }

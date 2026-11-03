@@ -104,11 +104,11 @@ Status: ⬜ not started · 🟡 in progress · ✅ done
 - Stock types (wheat, potato, rice, ...)
 - Storage types (dry, cold, open yard)
 - Units (bag, sq ft)
-- States and cities
+- Location hierarchy: **state → district → city / town**
 - Admin create / edit / disable screens (`/admin/master-data`); nothing is deleted, only disabled
-- Seeded: 12 stock types, 3 storage types, 2 units, 36 states/UTs, 25 starter cities
+- Seeded: 12 stock types, 3 storage types, 2 units, 36 states/UTs, 25 starter cities (each in its district); admins add more districts and towns
 - Read API is public (dropdowns); writes need a **temporary admin key** (`X-Admin-Key`) until M3 login
-- "Find storage space" dropdowns on Home (state → city, storage type, stock type)
+- "Find storage space" dropdowns on Home (state → district → city / town, storage type, stock type)
 
 **Done when:** admin can manage all lists and they appear in dropdowns.
 

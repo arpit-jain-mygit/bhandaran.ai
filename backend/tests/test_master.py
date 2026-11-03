@@ -32,15 +32,42 @@ def test_unknown_list_returns_404(client):
     assert client.get("/api/master/planets").status_code == 404
 
 
-def test_cities_can_be_filtered_by_state(client):
+def state_id(client, code: str) -> str:
+    """Id of a seeded state by its code, e.g. "MP"."""
     states = client.get("/api/master/states").json()
-    mp = next(state for state in states if state["code"] == "MP")
+    return next(state["id"] for state in states if state["code"] == code)
 
-    cities = client.get("/api/master/cities", params={"state_id": mp["id"]}).json()
+
+def district_id(client, state_code: str, name: str) -> str:
+    """Id of a district by state code and district name."""
+    params = {"state_id": state_id(client, state_code)}
+    districts = client.get("/api/master/districts", params=params).json()
+    return next(d["id"] for d in districts if d["name"] == name)
+
+
+def test_cities_can_be_filtered_by_state(client):
+    cities = client.get("/api/master/cities", params={"state_id": state_id(client, "MP")}).json()
 
     names = [city["name"] for city in cities]
     assert "Indore" in names
     assert "Mumbai" not in names  # Mumbai belongs to Maharashtra
+
+
+def test_vidisha_district_has_sironj(client):
+    vidisha = district_id(client, "MP", "Vidisha")
+
+    towns = client.get("/api/master/cities", params={"district_id": vidisha}).json()
+
+    assert "Sironj" in [town["name"] for town in towns]
+
+
+def test_seeded_cities_were_moved_into_their_districts(client):
+    mumbai_city = district_id(client, "MH", "Mumbai City")
+
+    cities = client.get("/api/master/cities", params={"district_id": mumbai_city}).json()
+
+    assert [city["name"] for city in cities] == ["Mumbai"]
+    assert cities[0]["state_id"] == state_id(client, "MH")
 
 
 # ---------- admin key ----------
@@ -128,31 +155,84 @@ def test_admin_can_rename_an_item(client):
     assert response.json()["code"] == created["code"]  # code never changes
 
 
-# ---------- cities ----------
+# ---------- districts ----------
 
 
-def test_admin_can_add_city_and_duplicates_are_case_insensitive(client):
-    states = client.get("/api/master/states").json()
-    goa = next(state for state in states if state["code"] == "GA")
-    name = f"Town {uuid.uuid4().hex[:6]}"
+def test_admin_can_add_district_and_duplicates_are_case_insensitive(client):
+    goa = state_id(client, "GA")
+    name = f"District {uuid.uuid4().hex[:6]}"
 
     first = client.post(
-        "/api/master/cities", json={"state_id": goa["id"], "name": name}, headers=ADMIN_HEADERS
+        "/api/master/districts", json={"state_id": goa, "name": name}, headers=ADMIN_HEADERS
     )
     again = client.post(
-        "/api/master/cities",
-        json={"state_id": goa["id"], "name": name.upper()},
+        "/api/master/districts",
+        json={"state_id": goa, "name": name.upper()},
         headers=ADMIN_HEADERS,
     )
 
     assert first.status_code == 201
+    assert first.json()["state_id"] == goa
     assert again.status_code == 409
 
 
-def test_city_for_unknown_state_returns_404(client):
+def test_district_for_unknown_state_returns_404(client):
+    response = client.post(
+        "/api/master/districts",
+        json={"state_id": str(uuid.uuid4()), "name": "Nowhere"},
+        headers=ADMIN_HEADERS,
+    )
+    assert response.status_code == 404
+
+
+# ---------- cities / towns ----------
+
+
+def new_district(client, state_code: str = "GA") -> str:
+    """Create a fresh district for a test and return its id."""
+    response = client.post(
+        "/api/master/districts",
+        json={"state_id": state_id(client, state_code), "name": f"D {uuid.uuid4().hex[:6]}"},
+        headers=ADMIN_HEADERS,
+    )
+    return response.json()["id"]
+
+
+def test_admin_can_add_town_and_duplicates_are_case_insensitive(client):
+    district = new_district(client)
+    name = f"Town {uuid.uuid4().hex[:6]}"
+
+    first = client.post(
+        "/api/master/cities", json={"district_id": district, "name": name}, headers=ADMIN_HEADERS
+    )
+    again = client.post(
+        "/api/master/cities",
+        json={"district_id": district, "name": name.upper()},
+        headers=ADMIN_HEADERS,
+    )
+
+    assert first.status_code == 201
+    assert first.json()["district_id"] == district
+    assert first.json()["state_id"] == state_id(client, "GA")
+    assert again.status_code == 409
+
+
+def test_same_town_name_is_allowed_in_two_districts(client):
+    name = f"Rampur {uuid.uuid4().hex[:4]}"
+
+    for district in (new_district(client), new_district(client)):
+        response = client.post(
+            "/api/master/cities",
+            json={"district_id": district, "name": name},
+            headers=ADMIN_HEADERS,
+        )
+        assert response.status_code == 201
+
+
+def test_city_for_unknown_district_returns_404(client):
     response = client.post(
         "/api/master/cities",
-        json={"state_id": str(uuid.uuid4()), "name": "Nowhere"},
+        json={"district_id": str(uuid.uuid4()), "name": "Nowhere"},
         headers=ADMIN_HEADERS,
     )
     assert response.status_code == 404

@@ -112,6 +112,9 @@ Aurora DSQL is stricter than PostgreSQL. `migrations/env.py` runs in AUTOCOMMIT 
 - No triggers, PL/pgSQL, extensions (PostGIS), temp tables, `TRUNCATE`, or array columns.
 - Data changes (DML) go in a **separate** migration from schema changes (DDL).
 - At most 3,000 rows changed per transaction - batch large data migrations.
+- **Revision IDs must be ≤ 32 characters** (`alembic_version` column size; `tests/test_migrations.py` enforces it).
+- Changing an existing table: `ADD COLUMN` takes no constraints; add foreign keys / CHECKs later (DSQL creates them `NOT VALID`), then `ALTER TABLE ASYNC ... VALIDATE CONSTRAINT`. There is no `SET NOT NULL` - use a `CHECK (col IS NOT NULL)`. See migrations 0009-0016 for the pattern.
+- When a migration removes something the **running** app still uses, apply it in two phases: additive steps first, deploy the new code, then the removal.
 
 ## Master data API
 
@@ -120,11 +123,14 @@ Aurora DSQL is stricter than PostgreSQL. `migrations/env.py` runs in AUTOCOMMIT 
 | GET | `/api/master/{kind}?include_inactive=false` | anyone |
 | POST | `/api/master/{kind}` `{code, name, sort_order}` | admin |
 | PATCH | `/api/master/{kind}/{id}` `{name?, sort_order?, is_active?}` | admin |
-| GET | `/api/master/cities?state_id=&include_inactive=false` | anyone |
-| POST | `/api/master/cities` `{state_id, name}` | admin |
+| GET | `/api/master/districts?state_id=&include_inactive=false` | anyone |
+| POST | `/api/master/districts` `{state_id, name}` | admin |
+| PATCH | `/api/master/districts/{id}` `{name?, is_active?}` | admin |
+| GET | `/api/master/cities?district_id=&state_id=&include_inactive=false` | anyone |
+| POST | `/api/master/cities` `{district_id, name}` | admin |
 | PATCH | `/api/master/cities/{id}` `{name?, is_active?}` | admin |
 
-`kind` = `stock-types`, `storage-types`, `units`, `states`. Nothing is deleted: send `{"is_active": false}` to disable.
+`kind` = `stock-types`, `storage-types`, `units`, `states`. Locations nest **state → district → city / town**; town names are unique within a district (the same name may exist in two districts). Nothing is deleted: send `{"is_active": false}` to disable.
 
 **Admin = temporary key** (until M3 login): send header `X-Admin-Key` matching `ADMIN_API_KEY` (local: `backend/.env`; dev: `terraform -chdir=../infra/envs/dev output -raw admin_api_key`). In the web app, paste it into the key box on **Admin**.
 

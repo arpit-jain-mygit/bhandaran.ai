@@ -54,21 +54,51 @@ describe('FindSpace', () => {
     expect(options(element, 'stockType')).toContain('Wheat');
   });
 
-  it('loads cities after a state is chosen', async () => {
+  it('cascades state -> district -> city / town', async () => {
     const fixture = TestBed.createComponent(FindSpace);
     fixture.detectChanges();
     flushLists();
     await fixture.whenStable();
+    const form = fixture.componentInstance as unknown as {
+      onStateChange(id: string): void;
+      onDistrictChange(id: string): void;
+    };
 
-    // Same as the user picking "Madhya Pradesh".
-    (fixture.componentInstance as unknown as { onStateChange(id: string): void }).onStateChange(
-      'mp',
-    );
-    const request = httpMock.expectOne((r) => r.url === '/api/master/cities');
-    expect(request.request.params.get('state_id')).toBe('mp');
-    request.flush([{ id: 'ind', state_id: 'mp', name: 'Indore', is_active: true }]);
+    // User picks "Madhya Pradesh" -> its districts load.
+    form.onStateChange('mp');
+    const districts = httpMock.expectOne((r) => r.url === '/api/master/districts');
+    expect(districts.request.params.get('state_id')).toBe('mp');
+    districts.flush([{ id: 'ind-d', state_id: 'mp', name: 'Indore', is_active: true }]);
     await fixture.whenStable();
+    expect(options(fixture.nativeElement, 'district')).toContain('Indore');
 
-    expect(options(fixture.nativeElement, 'city')).toContain('Indore');
+    // User picks the "Indore" district -> its towns load.
+    form.onDistrictChange('ind-d');
+    const cities = httpMock.expectOne((r) => r.url === '/api/master/cities');
+    expect(cities.request.params.get('district_id')).toBe('ind-d');
+    cities.flush([
+      { id: 'mhow', district_id: 'ind-d', state_id: 'mp', name: 'Mhow', is_active: true },
+    ]);
+    await fixture.whenStable();
+    expect(options(fixture.nativeElement, 'city')).toContain('Mhow');
+  });
+
+  it('clears district and town when the state changes', async () => {
+    const fixture = TestBed.createComponent(FindSpace);
+    fixture.detectChanges();
+    flushLists();
+    const form = fixture.componentInstance as unknown as {
+      onStateChange(id: string): void;
+      districtId: string;
+      cityId: string;
+    };
+    form.districtId = 'old-district';
+    form.cityId = 'old-town';
+
+    form.onStateChange('mp');
+    httpMock.expectOne((r) => r.url === '/api/master/districts').flush([]);
+
+    expect(form.districtId).toBe('');
+    expect(form.cityId).toBe('');
   });
 });
