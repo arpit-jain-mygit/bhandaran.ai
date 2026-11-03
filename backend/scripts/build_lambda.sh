@@ -44,8 +44,23 @@ python3 -m pip install \
 # Add our own code.
 cp -r app "$BUILD_DIR/"
 
-# Drop caches to keep the zip small, then zip.
+# Precompile every .py file to bytecode (.pyc) and ship it in the zip.
+# Lambda's code folder is read-only, so without this Python recompiles
+# all libraries from source on EVERY cold start (measured ~4x slower
+# imports). Rules:
+#   - .pyc files only work for the exact Python version that made
+#     them, so this must run on Python 3.14 (same as the Lambda runtime).
+#   - "unchecked-hash" makes Python trust the .pyc without comparing
+#     file timestamps (zip files don't keep reliable timestamps).
+LAMBDA_PYTHON="3.14"
+BUILD_PYTHON="$(python3 -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")')"
+if [ "$BUILD_PYTHON" != "$LAMBDA_PYTHON" ]; then
+  echo "ERROR: build with Python $LAMBDA_PYTHON (found $BUILD_PYTHON) so .pyc files match Lambda" >&2
+  exit 1
+fi
 find "$BUILD_DIR" -name "__pycache__" -type d -prune -exec rm -rf {} +
+python3 -m compileall -q -j 0 --invalidation-mode unchecked-hash "$BUILD_DIR"
+
 (cd "$BUILD_DIR" && zip -qr9 "../../$ZIP_PATH" .)
 
 echo "Built $ZIP_PATH ($(du -h "$ZIP_PATH" | cut -f1))"

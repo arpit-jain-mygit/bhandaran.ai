@@ -41,3 +41,12 @@ variable "throttle_burst" {
   type        = number
   default     = 20
 }
+
+# When to send keep-warm pings (EventBridge schedule, UTC).
+# Default: every 5 minutes from 00:00 to 17:55 UTC = 05:30 to 23:25 IST.
+# null = no keep-warm ping.
+variable "warmup_schedule" {
+  description = "EventBridge schedule for keep-warm pings, or null to disable"
+  type        = string
+  default     = "cron(0/5 0-17 * * ? *)"
+}

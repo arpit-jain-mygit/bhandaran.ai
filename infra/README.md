@@ -40,6 +40,7 @@ infra/
 | shared | `bhandaran-github-plan` role (read-only), `bhandaran-github-apply` role (admin, main branch only), monthly budget | Reuses the account's existing GitHub OIDC provider |
 | dev | DSQL cluster `bhandaran-dev`, bucket `bhandaran-dev-photos-<account>`, SNS topic + daily DPU alarm | No VPC/NAT needed: DSQL uses IAM auth |
 | dev (M0b) | Lambda `bhandaran-dev-api` + HTTP API (10 req/s, burst 20), web bucket, CloudFront distribution + SPA function, `bhandaran-dev-github-deploy` role | Dev URL: `terraform output web_url` |
+| dev (keep-warm) | EventBridge rule `bhandaran-dev-api-warmup`: `{"warmup": true}` every 5 min, 05:30-23:30 IST | Fewer cold starts; `warmup_schedule = null` turns it off |
 | prod | Same as dev with deletion protection and no `force_destroy` | **Not applied in T0** |
 
 ## Prerequisites

@@ -156,3 +156,36 @@ resource "aws_lambda_permission" "apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }
+
+# ---------- Keep-warm ping (cold-start reducer) ----------
+
+# Every few minutes (default: every 5 min, 05:30-23:30 IST) send
+# {"warmup": true} straight to the function. The handler runs one
+# "SELECT 1" so the instance and its DSQL connection stay warm.
+# Cost: ~6,500 tiny invocations a month - inside Lambda's free tier.
+resource "aws_cloudwatch_event_rule" "warmup" {
+  count = var.warmup_schedule != null ? 1 : 0
+
+  name                = "${var.name}-warmup"
+  description         = "Keep ${var.name} warm (fewer cold starts)"
+  schedule_expression = var.warmup_schedule
+}
+
+resource "aws_cloudwatch_event_target" "warmup" {
+  count = var.warmup_schedule != null ? 1 : 0
+
+  rule  = aws_cloudwatch_event_rule.warmup[0].name
+  arn   = aws_lambda_function.api.arn
+  input = jsonencode({ warmup = true })
+}
+
+# Allow this one EventBridge rule to invoke the function.
+resource "aws_lambda_permission" "warmup" {
+  count = var.warmup_schedule != null ? 1 : 0
+
+  statement_id  = "AllowWarmupSchedule"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.warmup[0].arn
+}

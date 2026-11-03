@@ -148,4 +148,19 @@ In AWS the same app runs on Lambda (`app.lambda_handler.handler`). The CI deploy
 ./scripts/build_lambda.sh
 ```
 
-It downloads Linux arm64 wheels for Python 3.14 (not your Mac's), so the zip runs on Lambda.
+It downloads Linux arm64 wheels for Python 3.14 (not your Mac's), so the zip runs on Lambda, and **precompiles every file to bytecode** (`.pyc`, `unchecked-hash`). It must run on Python 3.14 - the script refuses other versions, because `.pyc` files only work on the version that made them.
+
+### Cold starts (measured on dev, 2026-11-03)
+
+Lambda shuts down when idle; the next request waits for it to start ("cold start").
+
+| Setup | What a user waits | Billed per cold start |
+|---|---|---|
+| Before: 512 MB, no `.pyc` | 6.0 - 7.5 s | 2.7 - 3.5 GB-s |
+| **Now: 512 MB + `.pyc`** | **2.8 - 3.1 s** | **1.2 - 1.3 GB-s** (about half) |
+| Tried: 1024 MB + `.pyc` | 2.5 - 2.7 s | 1.9 - 2.2 GB-s |
+| Tried: 1769 MB (1 full vCPU) + `.pyc` | 1.7 - 1.9 s | 2.3 - 2.5 GB-s |
+
+Why: Lambda's code folder is read-only, so without shipped `.pyc` files Python recompiled every library on each cold start on a fraction of a CPU. We kept **512 MB** - cheapest per cold start; more memory is faster but costs more.
+
+**Keep-warm ping:** an EventBridge schedule sends `{"warmup": true}` every 5 minutes, 05:30-23:30 IST (`infra/modules/api_lambda`, `warmup_schedule`). `app/lambda_handler.py` answers it with one `SELECT 1`, keeping the instance and its DSQL connection warm, so most visitors get a warm response (~0.1-0.3 s). About 6,500 pings a month: inside Lambda's free tier; watch DSQL `TotalDPU` for the small cost of the `SELECT 1`s.
