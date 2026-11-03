@@ -23,7 +23,7 @@ function fakeAuth(user: User | null) {
 }
 
 function userWith(...roles: Role[]): User {
-  return { id: 'u1', phone: '+919000000001', name: 'Test', roles };
+  return { id: 'u1', email: 'test@example.com', name: 'Test', roles };
 }
 
 // Run the guard in Angular's injection context and wait for its answer.

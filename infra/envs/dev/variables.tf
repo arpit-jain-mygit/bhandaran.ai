@@ -41,3 +41,10 @@ variable "github_subject_prefix" {
   type        = string
   default     = "repo:arpit-jain-mygit@250862261/bhandaran.ai@1444180371"
 }
+
+# Verified SES sender address for login codes. Set in terraform.tfvars
+# (git-ignored), not here. SES emails this address a link to verify.
+variable "mail_from" {
+  description = "Verified SES sender address for login emails"
+  type        = string
+}

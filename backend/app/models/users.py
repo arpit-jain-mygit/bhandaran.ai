@@ -1,11 +1,11 @@
 # ---------------------------------------------------------------
 # Users, their roles, and one-time login codes (M3).
 #
-#   app_user      - one row per phone number ("user" is a reserved
+#   app_user      - one row per email address ("user" is a reserved
 #                   word in PostgreSQL, hence "app_user")
 #   user_role     - which roles a user has (OWNER, RENTER, ADMIN);
 #                   one person can have several
-#   otp_challenge - a 6-digit code sent to a phone; only a hash of
+#   otp_challenge - a 6-digit code emailed to a user; only a hash of
 #                   the code is stored
 # ---------------------------------------------------------------
 import uuid
@@ -31,10 +31,18 @@ USER_STATUSES = ("ACTIVE", "SUSPENDED")
 
 class User(UuidPkMixin, TimestampMixin, Base):
     __tablename__ = "app_user"
-    __table_args__ = (CheckConstraint(f"status IN {USER_STATUSES}", name="ck_app_user_status"),)
+    __table_args__ = (
+        CheckConstraint(f"status IN {USER_STATUSES}", name="ck_app_user_status"),
+        # One account per email address (lower-case, see normalize_email).
+        Index("uq_app_user_email", "email", unique=True),
+    )
 
-    # Indian mobile in international form, e.g. +919876543210. One account per phone.
-    phone: Mapped[str] = mapped_column(String(16), nullable=False, unique=True)
+    # Login identity. Required from sign-up on; nullable only for the
+    # rows that existed before email login (see migration 0024).
+    email: Mapped[str | None] = mapped_column(String(254))
+    # Indian mobile in international form, e.g. +919876543210. Optional
+    # until bookings need it; one account per phone when set.
+    phone: Mapped[str | None] = mapped_column(String(16), unique=True)
     name: Mapped[str | None] = mapped_column(String(100))
     # SUSPENDED users can't log in (and existing sessions stop working).
     status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="ACTIVE")
@@ -66,11 +74,11 @@ class UserRole(UuidPkMixin, TimestampMixin, Base):
 
 class OtpChallenge(UuidPkMixin, Base):
     __tablename__ = "otp_challenge"
-    # Speeds up "latest code for this phone" and the hourly limit.
-    __table_args__ = (Index("ix_otp_challenge_phone_created", "phone", "created_at"),)
+    # Speeds up "latest code for this email" and the hourly limit.
+    __table_args__ = (Index("ix_otp_challenge_email_created", "email", "created_at"),)
 
-    phone: Mapped[str] = mapped_column(String(16), nullable=False)
-    # HMAC-SHA256 of phone + code (never the code itself).
+    email: Mapped[str] = mapped_column(String(254), nullable=False)
+    # HMAC-SHA256 of email + code (never the code itself).
     code_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     # Wrong guesses so far; the code stops working after too many.

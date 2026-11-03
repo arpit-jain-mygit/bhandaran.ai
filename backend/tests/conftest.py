@@ -45,8 +45,8 @@ RENTER_HEADERS: dict[str, str] = {}
 TEST_USERS: dict[str, User] = {}
 
 
-def make_user(session: Session, phone: str, name: str, *roles: str) -> User:
-    user = User(phone=phone, name=name)
+def make_user(session: Session, email: str, name: str, *roles: str) -> User:
+    user = User(email=email, name=name)
     for role in roles:
         user.roles.append(UserRole(role=role))
     session.add(user)
@@ -73,9 +73,9 @@ def migrated_db() -> None:
     # One user per role, logged in via Bearer tokens.
     with Session(get_engine(), expire_on_commit=False) as session:
         users = {
-            "admin": make_user(session, "+919000000001", "Test Admin", "ADMIN"),
-            "owner": make_user(session, "+919000000002", "Test Owner", "OWNER"),
-            "renter": make_user(session, "+919000000003", "Test Renter", "RENTER"),
+            "admin": make_user(session, "admin@example.test", "Test Admin", "ADMIN"),
+            "owner": make_user(session, "owner@example.test", "Test Owner", "OWNER"),
+            "renter": make_user(session, "renter@example.test", "Test Renter", "RENTER"),
         }
         session.commit()
     TEST_USERS.update(users)

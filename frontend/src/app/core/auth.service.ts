@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------
-// AuthService: who is logged in, and the phone-OTP login steps.
+// AuthService: who is logged in, and the email-OTP login steps.
 // Talks to /api/auth (backend/app/api/auth.py). The session itself
 // is an httpOnly cookie the browser sends automatically - this code
 // never sees the token.
@@ -12,7 +12,7 @@ export type Role = 'OWNER' | 'RENTER' | 'ADMIN';
 
 export interface User {
   id: string;
-  phone: string;
+  email: string | null;
   name: string | null;
   roles: Role[];
 }
@@ -70,13 +70,13 @@ export class AuthService {
 
   // ---------- login steps ----------
 
-  requestOtp(phone: string): Observable<OtpSent> {
-    return this.http.post<OtpSent>(`${BASE}/otp`, { phone });
+  requestOtp(email: string): Observable<OtpSent> {
+    return this.http.post<OtpSent>(`${BASE}/otp`, { email });
   }
 
-  verifyOtp(phone: string, code: string): Observable<VerifyResult> {
+  verifyOtp(email: string, code: string): Observable<VerifyResult> {
     return this.http
-      .post<VerifyResult>(`${BASE}/verify`, { phone, code })
+      .post<VerifyResult>(`${BASE}/verify`, { email, code })
       .pipe(tap((result) => result.user && this.user.set(result.user)));
   }
 

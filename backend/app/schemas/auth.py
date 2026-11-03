@@ -11,7 +11,7 @@ OtpCode = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^\d{
 
 
 class OtpRequest(BaseModel):
-    phone: str  # any common format; normalised to +91XXXXXXXXXX
+    email: str  # any casing; normalised to lower case
 
 
 class OtpSent(BaseModel):
@@ -22,20 +22,20 @@ class OtpSent(BaseModel):
 
 
 class OtpVerify(BaseModel):
-    phone: str
+    email: str
     code: OtpCode
 
 
 class UserOut(BaseModel):
     id: uuid.UUID
-    phone: str
+    email: str | None
     name: str | None
     roles: list[str]
 
 
 class VerifyResult(BaseModel):
     # "logged_in": existing user, session cookie set.
-    # "signup_required": new phone - finish with POST /api/auth/signup.
+    # "signup_required": new email - finish with POST /api/auth/signup.
     status: Literal["logged_in", "signup_required"]
     user: UserOut | None = None
     signup_token: str | None = None

@@ -38,26 +38,6 @@ input {
   min-width: 0;
 }
 
-// "+91" box joined to the phone input.
-.phone {
-  display: flex;
-
-  .prefix {
-    display: flex;
-    align-items: center;
-    padding: 0 0.7rem;
-    border: 1px solid var(--border);
-    border-right: none;
-    border-radius: 8px 0 0 8px;
-    color: var(--muted);
-  }
-
-  input {
-    flex: 1;
-    border-radius: 0 8px 8px 0;
-  }
-}
-
 // Big, spaced digits for the code.
 .code {
   font-size: 1.4rem;

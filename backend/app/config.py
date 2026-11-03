@@ -38,8 +38,12 @@ class Settings(BaseSettings):
     #   "log"      - written to the server log only (dev in AWS: CloudWatch)
     #   "response" - also returned in the API reply, so the login page can
     #                show it. Only honoured when db_mode = "local".
+    #   "email"    - emailed through Amazon SES (dev and prod).
     # Real SMS arrives with notifications (M12).
-    otp_delivery: Literal["log", "response"] = "log"
+    otp_delivery: Literal["log", "response", "email"] = "log"
+
+    # Verified SES sender address for login emails (MAIL_FROM).
+    mail_from: str = ""
 
     # Send the session cookie only over HTTPS. Set false for plain
     # http://localhost if your browser refuses the cookie.

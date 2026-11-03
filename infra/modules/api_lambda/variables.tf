@@ -50,3 +50,11 @@ variable "warmup_schedule" {
   type        = string
   default     = "cron(0/5 0-17 * * ? *)"
 }
+
+# SES identity ARN the function may send email from (email OTP).
+# null = no email permission.
+variable "ses_identity_arn" {
+  description = "ARN of the SES identity the API may send email from, or null"
+  type        = string
+  default     = null
+}

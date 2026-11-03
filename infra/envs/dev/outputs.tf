@@ -48,3 +48,10 @@ output "github_deploy_role_arn" {
   description = "GitHub variable AWS_DEV_DEPLOY_ROLE_ARN"
   value       = module.github_deploy.role_arn
 }
+
+# ---------- Email (SES) ----------
+
+output "mail_from" {
+  description = "Verified SES sender address used for login codes"
+  value       = var.mail_from
+}

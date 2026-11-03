@@ -78,6 +78,22 @@ resource "aws_iam_role_policy" "dsql" {
   policy = data.aws_iam_policy_document.dsql.json
 }
 
+# Send email (email OTP codes) from the verified SES domain only.
+data "aws_iam_policy_document" "ses" {
+  statement {
+    actions   = ["ses:SendEmail"]
+    resources = [var.ses_identity_arn]
+  }
+}
+
+# Only created when an SES identity is given.
+resource "aws_iam_role_policy" "ses" {
+  count  = var.ses_identity_arn == null ? 0 : 1
+  name   = "ses-send"
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.ses.json
+}
+
 # ---------- Logs ----------
 
 # Keep API logs for 14 days (older logs are deleted to save cost).

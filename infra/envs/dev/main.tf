@@ -55,6 +55,15 @@ resource "random_password" "app_secret_key" {
   special = false
 }
 
+# Email sender for login codes (SES; SMS waits for DLT, M12).
+module "ses" {
+  source = "../../modules/ses_identity"
+
+  identity   = var.mail_from
+  region     = var.region
+  account_id = data.aws_caller_identity.current.account_id
+}
+
 # FastAPI on Lambda behind an API Gateway HTTP API.
 # CORS_ORIGINS is empty: the browser reaches UI and API through the
 # same CloudFront URL, so no cross-origin calls happen.
@@ -63,6 +72,7 @@ module "api" {
 
   name             = "${local.name_prefix}-api"
   dsql_cluster_arn = module.dsql.arn
+  ses_identity_arn = module.ses.identity_arn
 
   environment = {
     DB_MODE        = "dsql"
@@ -70,9 +80,10 @@ module "api" {
     DSQL_USER      = "admin"
     CORS_ORIGINS   = "[]"
     APP_SECRET_KEY = random_password.app_secret_key.result
-    # OTP codes go to CloudWatch logs only (no SMS until M12).
-    OTP_DELIVERY  = "log"
+    # Login codes are emailed through SES (SMS waits for DLT, M12).
+    OTP_DELIVERY  = "email"
     COOKIE_SECURE = "true"
+    MAIL_FROM     = var.mail_from
   }
 }
 

@@ -10,7 +10,7 @@ export const routes: Routes = [
   // "/" - system status + "Find space" dropdowns.
   { path: '', component: Home, title: 'bhandaran.ai' },
 
-  // "/login" - phone OTP login and sign-up (M3).
+  // "/login" - email OTP login and sign-up (M3).
   {
     path: 'login',
     title: 'Log in - bhandaran.ai',

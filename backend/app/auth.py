@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------
-# Login building blocks (M3): phone numbers, OTP codes, signed
+# Login building blocks (M3): email addresses, OTP codes, signed
 # tokens, and the "who is calling / what may they do" checks that
 # API endpoints depend on.
 #
@@ -31,25 +31,26 @@ SESSION_COOKIE = "bh_session"
 TOKEN_ALGORITHM = "HS256"
 SIGNUP_TOKEN_MINUTES = 10  # time to finish sign-up after the OTP is correct
 
-# Indian mobile: optional +91 / 91 / 0 prefix, then 10 digits starting 6-9.
-_PHONE = re.compile(r"^(?:\+?91|0)?([6-9]\d{9})$")
+# A practical email check: something@something.tld, no spaces.
+_EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+MAX_EMAIL_LENGTH = 254
 
 
-# ---------- phone numbers ----------
+# ---------- email addresses ----------
 
 
-def normalize_phone(raw: str) -> str:
-    """'98260 12345', '+91-9826012345', '09826012345' -> '+919826012345'."""
-    digits = re.sub(r"[\s\-()]", "", raw)
-    match = _PHONE.match(digits)
-    if not match:
-        raise ValueError("Enter a valid 10-digit Indian mobile number")
-    return f"+91{match.group(1)}"
+def normalize_email(raw: str) -> str:
+    """' Asha@Example.COM ' -> 'asha@example.com' (one account per address)."""
+    email = raw.strip().lower()
+    if len(email) > MAX_EMAIL_LENGTH or not _EMAIL.match(email):
+        raise ValueError("Enter a valid email address")
+    return email
 
 
-def mask_phone(phone: str) -> str:
-    """'+919826012345' -> '+91******2345' (safe to write in logs)."""
-    return phone[:3] + "******" + phone[-4:]
+def mask_email(email: str) -> str:
+    """'asha@example.com' -> 'as***@example.com' (safe to write in logs)."""
+    name, _, domain = email.partition("@")
+    return name[:2] + "***@" + domain
 
 
 # ---------- secrets ----------
@@ -76,14 +77,14 @@ def new_otp_code() -> str:
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
-def hash_otp(phone: str, code: str) -> str:
+def hash_otp(email: str, code: str) -> str:
     """Only this hash is stored, never the code itself."""
-    return hmac.new(_derived_key("otp"), f"{phone}:{code}".encode(), hashlib.sha256).hexdigest()
+    return hmac.new(_derived_key("otp"), f"{email}:{code}".encode(), hashlib.sha256).hexdigest()
 
 
-def otp_matches(phone: str, code: str, stored_hash: str) -> bool:
+def otp_matches(email: str, code: str, stored_hash: str) -> bool:
     # compare_digest takes the same time for right and wrong codes.
-    return hmac.compare_digest(hash_otp(phone, code), stored_hash)
+    return hmac.compare_digest(hash_otp(email, code), stored_hash)
 
 
 # ---------- signed tokens (JWT) ----------
@@ -112,12 +113,12 @@ def create_session_token(user_id: uuid.UUID) -> str:
     )
 
 
-def create_signup_token(phone: str) -> str:
-    """Proof that this phone passed the OTP check; used to finish sign-up."""
-    return _encode({"sub": phone, "typ": "signup"}, timedelta(minutes=SIGNUP_TOKEN_MINUTES))
+def create_signup_token(email: str) -> str:
+    """Proof that this email passed the OTP check; used to finish sign-up."""
+    return _encode({"sub": email, "typ": "signup"}, timedelta(minutes=SIGNUP_TOKEN_MINUTES))
 
 
-def phone_from_signup_token(token: str) -> str:
+def email_from_signup_token(token: str) -> str:
     return _decode(token, "signup")["sub"]
 
 
