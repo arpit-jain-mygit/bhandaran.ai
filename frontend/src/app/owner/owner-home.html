@@ -1,4 +1,4 @@
-<!-- Owner's main screen: welcome, invite renters, and a placeholder until listings arrive. -->
+<!-- Owner's main screen: godowns first; inviting a renter is optional. -->
 <h1>Namaste, {{ auth.user()?.name || 'owner' }}</h1>
 <p class="muted">Your bookings will appear here soon.</p>
 
@@ -9,42 +9,53 @@
 </section>
 
 <section class="card">
-  <h2>Invite a renter</h2>
-  <p class="muted small">
-    Enter the renter's email. They get an email, then log in with a code sent to that address to
-    claim their account.
-  </p>
+  <div class="row">
+    <div>
+      <h2>Invite a renter <span class="muted optional">(optional)</span></h2>
+      <p class="muted small">
+        Add a renter you already work with, so they can see their stock here.
+      </p>
+    </div>
+    @if (!showInvite()) {
+      <button type="button" class="secondary" (click)="showInvite.set(true)">
+        Invite a renter
+      </button>
+    }
+  </div>
 
-  <form (ngSubmit)="invite()">
-    <label for="renter-email">Renter's email</label>
-    <input
-      id="renter-email"
-      name="renterEmail"
-      type="email"
-      autocomplete="off"
-      required
-      [(ngModel)]="renterEmail"
-    />
+  @if (showInvite()) {
+    <form (ngSubmit)="invite()">
+      <label for="renter-email">Renter's email</label>
+      <input
+        id="renter-email"
+        name="renterEmail"
+        type="email"
+        autocomplete="off"
+        required
+        [(ngModel)]="renterEmail"
+      />
 
-    <label for="renter-name">Renter's name</label>
-    <input
-      id="renter-name"
-      name="renterName"
-      autocomplete="off"
-      required
-      maxlength="100"
-      [(ngModel)]="renterName"
-    />
+      <label for="renter-name">Renter's name</label>
+      <input
+        id="renter-name"
+        name="renterName"
+        autocomplete="off"
+        required
+        maxlength="100"
+        [(ngModel)]="renterName"
+      />
 
-    <button type="submit" [disabled]="busy() || !renterEmail.trim() || !renterName.trim()">
-      Send invite
-    </button>
-  </form>
+      <button type="submit" [disabled]="busy() || !renterEmail.trim() || !renterName.trim()">
+        Send invite
+      </button>
+    </form>
 
-  @if (notice()) {
-    <p class="msg notice" role="status">{{ notice() }}</p>
-  }
-  @if (error()) {
-    <p class="msg error" role="alert">{{ error() }}</p>
+    @if (notice()) {
+      <p class="msg notice" role="status">{{ notice() }}</p>
+    }
+    @if (error()) {
+      <p class="msg error" role="alert">{{ error() }}</p>
+    }
+    <button type="button" class="link" (click)="showInvite.set(false)">Close</button>
   }
 </section>

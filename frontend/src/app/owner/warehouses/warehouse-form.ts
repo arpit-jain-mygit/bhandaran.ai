@@ -74,11 +74,26 @@ export class WarehouseForm implements OnInit {
     });
   }
 
+  /** Required fields still empty, in plain words (empty = ready to save). */
+  protected formProblems(): string[] {
+    const problems: string[] = [];
+    if (!this.name.trim()) problems.push('a name');
+    if (!this.address.trim()) problems.push('an address');
+    if (!this.cityId) problems.push('a city');
+    if (!/^\d{6}$/.test(this.pincode.trim())) problems.push('a 6-digit pincode');
+    if (!this.capacity || this.capacity < 1) problems.push('the capacity');
+    if (!this.unitId) problems.push('a unit');
+    if (!this.storageTypeId) problems.push('a storage type');
+    if (!/^\d+(\.\d{1,2})?$/.test(this.price.trim())) problems.push('a price (e.g. 12.50)');
+    return problems;
+  }
+
   protected readOnly(): boolean {
     return this.warehouse()?.status === 'PENDING_REVIEW';
   }
 
   protected save(): void {
+    if (this.formProblems().length) return;
     this.busy.set(true);
     this.error.set('');
     this.notice.set('');

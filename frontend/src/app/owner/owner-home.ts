@@ -21,6 +21,8 @@ export class OwnerHome {
   private readonly profiles = inject(ProfileService);
   protected readonly auth = inject(AuthService);
 
+  // The invite form is optional: hidden until the owner asks for it.
+  protected readonly showInvite = signal(false);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly notice = signal('');

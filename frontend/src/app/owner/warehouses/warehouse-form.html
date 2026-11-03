@@ -117,7 +117,10 @@
     />
 
     @if (!readOnly()) {
-      <button type="submit" [disabled]="busy()">Save draft</button>
+      @if (formProblems().length) {
+        <p class="muted small">To save, add {{ formProblems().join(', ') }}.</p>
+      }
+      <button type="submit" [disabled]="busy() || formProblems().length > 0">Save draft</button>
     }
   </form>
 

@@ -91,3 +91,30 @@ button {
   font-weight: 600;
   text-decoration: none;
 }
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.optional {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+button.secondary {
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  margin-top: 0;
+}
+
+button.link {
+  background: none;
+  padding: 0;
+  color: var(--muted);
+  font-weight: 500;
+}
