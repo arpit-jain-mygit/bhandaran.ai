@@ -198,3 +198,4 @@ def require_role(*roles: str):
 # Shortcuts used by the API modules.
 require_admin = require_role("ADMIN")
 require_owner = require_role("OWNER")
+require_renter = require_role("RENTER")

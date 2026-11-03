@@ -2,7 +2,7 @@
 <app-welcome-banner
   [name]="auth.user()?.name"
   role="Godown owner"
-  message="List your storage space, get it approved, and fill it with renters. Bookings will appear here soon."
+  message="List your storage space, get it approved, and fill it with renters."
   actionLabel="Add a godown"
   actionLink="/owner/warehouses/new"
 />
@@ -11,6 +11,12 @@
   <h2>My godowns</h2>
   <p class="muted small">Describe your storage space, add photos, and send it for review.</p>
   <a class="button" routerLink="/owner/warehouses">Manage godowns</a>
+</section>
+
+<section class="card">
+  <h2>Bookings</h2>
+  <p class="muted small">Record deals made in person or by phone, and see who has booked space.</p>
+  <a class="button" routerLink="/owner/bookings">Open bookings</a>
 </section>
 
 <section class="card">

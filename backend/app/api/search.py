@@ -6,9 +6,10 @@
 #   GET /api/search/warehouses/{id}      one approved godown
 #
 # Results are sorted cheapest first, at most MAX_RESULTS.
-# Free space = total capacity until bookings arrive (M8).
+# Free space = total capacity minus space booked for today (M8).
 # ---------------------------------------------------------------
 import uuid
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Annotated
 
@@ -17,6 +18,7 @@ from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
 from app import photos
+from app.bookings import booked_today_sql, free_today
 from app.db import get_session
 from app.models import (
     City,
@@ -38,11 +40,6 @@ MAX_RESULTS = 50
 
 
 # ---------- helpers ----------
-
-
-def available_capacity(warehouse: Warehouse) -> int:
-    """Free space. Bookings (M8) will subtract booked space here."""
-    return warehouse.capacity
 
 
 def photo_urls(session: Session, warehouse: Warehouse) -> list[str]:
@@ -73,7 +70,7 @@ def result_fields(session: Session, warehouse: Warehouse, urls: list[str]) -> di
         "pincode": warehouse.pincode,
         "storage_type_name": session.get(StorageType, warehouse.storage_type_id).name,
         "unit_name": session.get(Unit, warehouse.unit_id).name,
-        "available_capacity": available_capacity(warehouse),
+        "available_capacity": free_today(session, warehouse),
         "price_per_unit_month": warehouse.price_per_unit_month,
         "stock_types": list(stock_names),
         "photo_url": urls[0] if urls else None,
@@ -121,8 +118,9 @@ def search(
     if max_price is not None:
         query = query.where(Warehouse.price_per_unit_month <= max_price)
     if min_capacity is not None:
-        # Until bookings exist, free space = total capacity.
-        query = query.where(Warehouse.capacity >= min_capacity)
+        # Free space today = capacity minus what live bookings hold today.
+        today = datetime.now(UTC).date()
+        query = query.where(Warehouse.capacity - booked_today_sql(today) >= min_capacity)
 
     rows = session.scalars(
         query.order_by(Warehouse.price_per_unit_month, Warehouse.name).limit(MAX_RESULTS)

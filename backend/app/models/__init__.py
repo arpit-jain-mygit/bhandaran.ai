@@ -3,6 +3,7 @@
 # Base.metadata (Alembic and tests rely on that).
 # ---------------------------------------------------------------
 from app.models.base import Base
+from app.models.booking import Booking
 from app.models.mail import EmailSuppression
 from app.models.master import City, District, State, StockType, StorageType, Unit
 from app.models.settings import OwnerSetting, PlatformSetting
@@ -11,6 +12,7 @@ from app.models.warehouse import Warehouse, WarehousePhoto, WarehouseStockType
 
 __all__ = [
     "Base",
+    "Booking",
     "City",
     "District",
     "EmailSuppression",

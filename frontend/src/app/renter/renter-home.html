@@ -1,4 +1,4 @@
-<!-- Renter's main screen. -->
+<!-- Renter's main screen: welcome + my bookings (confirm the pending ones). -->
 <app-welcome-banner
   [name]="auth.user()?.name"
   role="Renter"
@@ -6,8 +6,43 @@
   actionLabel="Find storage space"
   actionLink="/"
 />
-<section class="card">
+
+<section class="bookings">
   <h2>My bookings</h2>
-  <p class="muted">Your storage bookings and the bags you keep in each godown will appear here.</p>
-  <a routerLink="/">Find storage space</a>
+
+  @if (loading()) {
+    <p class="loading"><app-grain-loader [size]="24" label="Loading bookings" /> Loading…</p>
+  } @else if (rows().length === 0) {
+    <p class="muted">No bookings yet. <a routerLink="/">Find storage space</a></p>
+  }
+  @if (error()) {
+    <p class="msg error" role="alert">{{ error() }}</p>
+  }
+
+  @for (b of rows(); track b.id) {
+    <article class="card" [class.pending]="b.status === 'PENDING_RENTER_CONFIRMATION'">
+      <div>
+        <h3>{{ b.warehouse_name }}</h3>
+        <p class="muted small">{{ b.city_name }} · by {{ b.owner_name || 'the owner' }}</p>
+        <p class="small">
+          {{ b.quantity }} {{ b.unit_name }} of {{ b.stock_type_name }} ·
+          {{ b.start_date | date: 'd MMM y' }} – {{ b.end_date | date: 'd MMM y' }} · ₹{{
+            b.rate_per_unit_month
+          }}
+          per {{ b.unit_name }} / month
+        </p>
+        <p class="status">{{ statusLabel(b) }}</p>
+      </div>
+      @if (b.status === 'PENDING_RENTER_CONFIRMATION') {
+        <div class="confirm">
+          @if (b.confirmation_due_at) {
+            <p class="muted small">
+              Please confirm by {{ b.confirmation_due_at | date: 'd MMM y' }}
+            </p>
+          }
+          <button type="button" [disabled]="busy()" (click)="confirm(b)">Confirm booking</button>
+        </div>
+      }
+    </article>
+  }
 </section>

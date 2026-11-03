@@ -67,6 +67,14 @@ export const routes: Routes = [
     loadComponent: () => import('./owner/warehouses/warehouse-form').then((m) => m.WarehouseForm),
   },
 
+  // "/owner/bookings" - bookings at my godowns + record offline deals (M8).
+  {
+    path: 'owner/bookings',
+    title: 'Bookings - bhandaran.ai',
+    canActivate: [roleGuard('OWNER')],
+    loadComponent: () => import('./owner/bookings/owner-bookings').then((m) => m.OwnerBookings),
+  },
+
   // "/renter" - renter's main screen, renters only (M3).
   {
     path: 'renter',

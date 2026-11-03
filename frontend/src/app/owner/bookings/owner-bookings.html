@@ -1,0 +1,147 @@
+<!-- Owner > Bookings: record offline deals and see bookings at my godowns. -->
+<p><a routerLink="/owner">← Owner home</a></p>
+<header class="head">
+  <h1>Bookings</h1>
+  @if (!showForm() && godowns().length) {
+    <button type="button" (click)="showForm.set(true)">Record a booking</button>
+  }
+</header>
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Loading bookings" /> Loading…</p>
+} @else {
+  @if (!godowns().length) {
+    <p class="muted">
+      You can record bookings once one of your godowns is approved.
+      <a routerLink="/owner/warehouses">My godowns</a>
+    </p>
+  }
+
+  @if (showForm()) {
+    <form class="card" (ngSubmit)="save()">
+      <h2>Record a booking</h2>
+      <p class="muted small">For a deal agreed in person or by phone.</p>
+
+      <label for="godown">Godown</label>
+      <select
+        id="godown"
+        name="godown"
+        [ngModel]="warehouseId"
+        (ngModelChange)="onGodownChange($event)"
+      >
+        <option value="" disabled>Pick a godown</option>
+        @for (g of godowns(); track g.id) {
+          <option [value]="g.id">{{ g.name }} ({{ g.city_name }})</option>
+        }
+      </select>
+
+      <div class="row">
+        <div>
+          <label for="renter-email">Renter's email</label>
+          <input id="renter-email" name="renterEmail" type="email" [(ngModel)]="renterEmail" />
+        </div>
+        <div>
+          <label for="renter-name">Renter's name <span class="muted">(if new)</span></label>
+          <input id="renter-name" name="renterName" maxlength="100" [(ngModel)]="renterName" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="stock">Stock</label>
+          <select id="stock" name="stock" [(ngModel)]="stockTypeId" [disabled]="!selectedGodown()">
+            <option value="" disabled>
+              {{ selectedGodown() ? 'Pick stock' : 'Pick a godown first' }}
+            </option>
+            @for (id of selectedGodown()?.stock_type_ids ?? []; track id) {
+              <option [value]="id">{{ stockName(id) }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="quantity">Space ({{ selectedGodown()?.unit_name || 'units' }})</label>
+          <input id="quantity" name="quantity" type="number" min="1" [(ngModel)]="quantity" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="start">From</label>
+          <input id="start" name="start" type="date" [(ngModel)]="startDate" />
+        </div>
+        <div>
+          <label for="end">To</label>
+          <input id="end" name="end" type="date" [(ngModel)]="endDate" />
+        </div>
+      </div>
+
+      <label for="rate">Agreed rate per unit per month (₹)</label>
+      <input id="rate" name="rate" inputmode="decimal" [(ngModel)]="rate" />
+
+      @if (formProblems().length) {
+        <p class="muted small">To save, add {{ formProblems().join(', ') }}.</p>
+      }
+      <div class="actions">
+        <button type="submit" [disabled]="busy() || formProblems().length > 0">Save booking</button>
+        <button type="button" class="link" (click)="showForm.set(false)">Cancel</button>
+      </div>
+    </form>
+  }
+
+  @if (notice()) {
+    <p class="msg notice" role="status">{{ notice() }}</p>
+  }
+  @if (error()) {
+    <p class="msg error" role="alert">{{ error() }}</p>
+  }
+
+  @if (rows().length) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Godown</th>
+            <th>Renter</th>
+            <th>Stock</th>
+            <th>Space</th>
+            <th>Dates</th>
+            <th>Rate</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of rows(); track b.id) {
+            <tr>
+              <td>{{ b.warehouse_name }}</td>
+              <td>
+                {{ b.renter_name || b.renter_email }}<br /><span class="muted small">{{
+                  b.renter_email
+                }}</span>
+              </td>
+              <td>{{ b.stock_type_name }}</td>
+              <td>{{ b.quantity }} {{ b.unit_name }}</td>
+              <td>{{ b.start_date | date: 'd MMM y' }} – {{ b.end_date | date: 'd MMM y' }}</td>
+              <td>₹{{ b.rate_per_unit_month }}</td>
+              <td>
+                <span
+                  class="status"
+                  [class.pending]="b.status === 'PENDING_RENTER_CONFIRMATION'"
+                  [class.flag]="b.unverified"
+                >
+                  {{ statusLabel(b) }}
+                </span>
+                @if (b.status === 'PENDING_RENTER_CONFIRMATION' && b.confirmation_due_at) {
+                  <br /><span class="muted small"
+                    >by {{ b.confirmation_due_at | date: 'd MMM' }}</span
+                  >
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (godowns().length) {
+    <p class="muted">No bookings yet.</p>
+  }
+}

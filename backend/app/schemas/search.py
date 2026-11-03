@@ -17,7 +17,7 @@ class SearchResult(BaseModel):
     pincode: str
     storage_type_name: str
     unit_name: str
-    # Free space. Until bookings exist (M8) this is the total capacity.
+    # Free space today: capacity minus what live bookings hold today (M8).
     available_capacity: int
     price_per_unit_month: Decimal
     stock_types: list[str]
