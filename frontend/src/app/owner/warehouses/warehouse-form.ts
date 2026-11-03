@@ -88,8 +88,10 @@ export class WarehouseForm implements OnInit {
     return problems;
   }
 
+  /** Only drafts can be changed; under review or approved, the form is read-only. */
   protected readOnly(): boolean {
-    return this.warehouse()?.status === 'PENDING_REVIEW';
+    const status = this.warehouse()?.status;
+    return status === 'PENDING_REVIEW' || status === 'APPROVED';
   }
 
   protected save(): void {
@@ -172,7 +174,7 @@ export class WarehouseForm implements OnInit {
       next: (warehouse) => {
         this.busy.set(false);
         this.show(warehouse);
-        this.notice.set('Sent for review. You will be told when it is approved.');
+        this.notice.set('Sent for review. An admin will check it.');
       },
       error: (error) => {
         this.busy.set(false);

@@ -21,9 +21,17 @@
       <p class="muted small">
         {{ warehouse.city_name }} · {{ warehouse.capacity }} {{ warehouse.unit_name }}
       </p>
-      <p class="status" [class.review]="warehouse.status === 'PENDING_REVIEW'">
+      <p
+        class="status"
+        [class.review]="warehouse.status === 'PENDING_REVIEW'"
+        [class.approved]="warehouse.status === 'APPROVED'"
+        [class.changes]="!!warehouse.review_note"
+      >
         {{ statusLabel(warehouse) }}
       </p>
+      @if (warehouse.review_note) {
+        <p class="small note">Admin's note: {{ warehouse.review_note }}</p>
+      }
       @if (warehouse.status === 'DRAFT' && warehouse.missing.length) {
         <p class="small">Still needed: {{ warehouse.missing.join(', ') }}</p>
       }

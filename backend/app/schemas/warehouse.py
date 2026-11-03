@@ -60,3 +60,12 @@ class WarehouseOut(BaseModel):
     photos: list[PhotoOut]
     # What's still missing before the owner can submit (empty when ready).
     missing: list[str]
+    # Set when an admin sent the listing back, with the reason (M6).
+    review_note: str | None = None
+    # Filled in for admins only (M6 review screen).
+    owner_name: str | None = None
+    owner_email: str | None = None
+
+
+class RejectIn(BaseModel):
+    reason: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=500)]

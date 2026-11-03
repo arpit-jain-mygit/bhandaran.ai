@@ -5,8 +5,17 @@
 @if (loading()) {
   <p class="loading"><app-grain-loader [size]="28" label="Loading" /> Loading…</p>
 } @else {
-  @if (readOnly()) {
+  @if (warehouse()?.status === 'PENDING_REVIEW') {
     <p class="msg review">This listing is waiting for review, so it can't be changed.</p>
+  }
+  @if (warehouse()?.status === 'APPROVED') {
+    <p class="msg review">This listing is approved.</p>
+  }
+  @if (warehouse()?.review_note && warehouse()?.status === 'DRAFT') {
+    <p class="msg error">
+      An admin sent this back: <b>{{ warehouse()?.review_note }}</b
+      >. Fix it and submit again.
+    </p>
   }
 
   <form class="card" (ngSubmit)="save()">

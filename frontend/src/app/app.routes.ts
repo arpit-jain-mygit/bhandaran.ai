@@ -70,6 +70,14 @@ export const routes: Routes = [
       import('./admin/master-data/master-data-admin').then((m) => m.MasterDataAdmin),
   },
 
+  // "/admin/listings" - review owners' godown listings (M6). Admins only.
+  {
+    path: 'admin/listings',
+    title: 'Review listings - bhandaran.ai',
+    canActivate: [roleGuard('ADMIN')],
+    loadComponent: () => import('./admin/listings/listings-admin').then((m) => m.ListingsAdmin),
+  },
+
   // "/admin/settings" - platform settings + owner overrides (M2). Admins only.
   {
     path: 'admin/settings',

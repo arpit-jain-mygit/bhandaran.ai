@@ -1,0 +1,85 @@
+<!-- Admin > Listings: approve submitted godowns or send them back. -->
+<app-admin-header />
+<h1>Review listings</h1>
+
+<nav class="tabs" aria-label="Listing status">
+  <button
+    type="button"
+    [class.active]="tab() === 'PENDING_REVIEW'"
+    (click)="show('PENDING_REVIEW')"
+  >
+    Waiting for review
+  </button>
+  <button type="button" [class.active]="tab() === 'APPROVED'" (click)="show('APPROVED')">
+    Approved
+  </button>
+</nav>
+
+@if (notice()) {
+  <p class="msg notice" role="status">{{ notice() }}</p>
+}
+@if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <p class="loading"><app-grain-loader [size]="28" label="Loading listings" /> Loading…</p>
+} @else if (rows().length === 0) {
+  <p class="muted">
+    {{
+      tab() === 'PENDING_REVIEW' ? 'Nothing is waiting for review.' : 'No approved listings yet.'
+    }}
+  </p>
+}
+
+@for (warehouse of rows(); track warehouse.id) {
+  <article class="card">
+    <h2>{{ warehouse.name }}</h2>
+    <p class="muted small">
+      By {{ warehouse.owner_name || 'an owner' }} · {{ warehouse.owner_email }}
+    </p>
+
+    <dl>
+      <dt>Address</dt>
+      <dd>{{ warehouse.address }}, {{ warehouse.city_name }} {{ warehouse.pincode }}</dd>
+      <dt>Capacity</dt>
+      <dd>
+        {{ warehouse.capacity }} {{ warehouse.unit_name }} · {{ warehouse.storage_type_name }}
+      </dd>
+      <dt>Stock types</dt>
+      <dd>{{ stockList(warehouse) }}</dd>
+      <dt>Price</dt>
+      <dd>₹{{ warehouse.price_per_unit_month }} per {{ warehouse.unit_name }} per month</dd>
+    </dl>
+
+    <div class="photos">
+      @for (photo of warehouse.photos; track photo.id) {
+        @if (photo.view_url) {
+          <a [href]="photo.view_url" target="_blank" rel="noopener">
+            <img [src]="photo.view_url" alt="Photo of {{ warehouse.name }}" />
+          </a>
+        }
+      }
+    </div>
+
+    @if (tab() === 'PENDING_REVIEW') {
+      <div class="decide">
+        <button type="button" [disabled]="busy()" (click)="approve(warehouse)">Approve</button>
+        <input
+          [name]="'reason-' + warehouse.id"
+          placeholder="Reason to send back, e.g. photos are too dark"
+          maxlength="500"
+          [(ngModel)]="reasons[warehouse.id]"
+        />
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="busy() || (reasons[warehouse.id] ?? '').trim().length < 3"
+          (click)="reject(warehouse)"
+        >
+          Send back
+        </button>
+      </div>
+    }
+  </article>
+}

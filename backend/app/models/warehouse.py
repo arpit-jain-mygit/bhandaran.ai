@@ -25,7 +25,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, TimestampMixin, UuidPkMixin
 
-WAREHOUSE_STATUSES = ("DRAFT", "PENDING_REVIEW")
+# DRAFT -> PENDING_REVIEW (owner submits) -> APPROVED, or back to DRAFT
+# with a review_note when an admin sends it back (M6).
+WAREHOUSE_STATUSES = ("DRAFT", "PENDING_REVIEW", "APPROVED")
 PHOTO_STATUSES = ("PENDING", "UPLOADED")
 
 
@@ -48,6 +50,10 @@ class Warehouse(UuidPkMixin, TimestampMixin, Base):
     storage_type_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
     price_per_unit_month: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, server_default="DRAFT")
+    # Admin review (M6): why it was sent back, and who reviewed it when.
+    review_note: Mapped[str | None] = mapped_column(String(500))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_by_id: Mapped[uuid.UUID | None] = mapped_column()
 
 
 class WarehouseStockType(UuidPkMixin, Base):

@@ -27,9 +27,12 @@ export interface Warehouse {
   storage_type_name: string | null;
   stock_type_ids: string[];
   price_per_unit_month: string; // Decimal comes back as text
-  status: 'DRAFT' | 'PENDING_REVIEW';
+  status: 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED';
   photos: Photo[];
   missing: string[]; // what still blocks "submit" (empty = ready)
+  review_note: string | null; // why an admin sent it back (M6)
+  owner_name?: string | null; // admin screens only
+  owner_email?: string | null;
 }
 
 export interface WarehouseInput {

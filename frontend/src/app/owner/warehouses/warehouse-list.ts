@@ -36,6 +36,8 @@ export class WarehouseList implements OnInit {
   }
 
   protected statusLabel(warehouse: Warehouse): string {
-    return warehouse.status === 'PENDING_REVIEW' ? 'Waiting for review' : 'Draft';
+    if (warehouse.status === 'APPROVED') return 'Approved';
+    if (warehouse.status === 'PENDING_REVIEW') return 'Waiting for review';
+    return warehouse.review_note ? 'Changes requested' : 'Draft';
   }
 }

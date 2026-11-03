@@ -69,8 +69,18 @@ h2 {
   font-weight: 600;
 
   &.review {
+    border-color: var(--grain-wheat);
+    color: var(--text);
+  }
+
+  &.approved {
     border-color: var(--good);
     color: var(--good);
+  }
+
+  &.changes {
+    border-color: var(--bad);
+    color: var(--bad);
   }
 }
 
@@ -78,5 +88,9 @@ h2 {
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   border: 1px solid var(--bad);
+  color: var(--bad);
+}
+
+.note {
   color: var(--bad);
 }

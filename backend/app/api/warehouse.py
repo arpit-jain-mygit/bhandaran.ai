@@ -58,9 +58,7 @@ def my_warehouse(session: Session, owner: User, warehouse_id: uuid.UUID) -> Ware
 
 def require_draft(warehouse: Warehouse) -> None:
     if warehouse.status != "DRAFT":
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, "This listing is under review and can't be changed"
-        )
+        raise HTTPException(status.HTTP_409_CONFLICT, "Only draft listings can be changed")
 
 
 def check_lookups(session: Session, body: WarehouseIn) -> None:
@@ -111,7 +109,7 @@ def missing_items(session: Session, warehouse: Warehouse) -> list[str]:
     return missing
 
 
-def warehouse_out(session: Session, warehouse: Warehouse) -> WarehouseOut:
+def warehouse_out(session: Session, warehouse: Warehouse, with_owner: bool = False) -> WarehouseOut:
     city = session.get(City, warehouse.city_id)
     unit = session.get(Unit, warehouse.unit_id)
     storage = session.get(StorageType, warehouse.storage_type_id)
@@ -144,7 +142,18 @@ def warehouse_out(session: Session, warehouse: Warehouse) -> WarehouseOut:
         status=warehouse.status,
         photos=[photo_out(p) for p in photo_rows],
         missing=missing_items(session, warehouse),
+        review_note=warehouse.review_note,
+        **(owner_fields(session, warehouse) if with_owner else {}),
     )
+
+
+def owner_fields(session: Session, warehouse: Warehouse) -> dict:
+    """Who listed it (admins see this on the review screen)."""
+    owner = session.get(User, warehouse.owner_id)
+    return {
+        "owner_name": owner.name if owner else None,
+        "owner_email": owner.email if owner else None,
+    }
 
 
 # ---------- listings ----------
@@ -215,6 +224,7 @@ def submit_listing(warehouse_id: uuid.UUID, owner: OwnerUser, session: DbSession
     if problems:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "; ".join(problems))
     warehouse.status = "PENDING_REVIEW"
+    warehouse.review_note = None  # the owner has dealt with the last review
     commit_or_409(session, "Listing was changed at the same time, try again")
     session.refresh(warehouse)
     return warehouse_out(session, warehouse)
