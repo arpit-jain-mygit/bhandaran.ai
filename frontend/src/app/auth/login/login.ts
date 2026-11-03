@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
@@ -69,7 +70,18 @@ export class Login {
   // ---------- step 3: new account ----------
 
   protected createAccount(): void {
-    this.run(this.auth.signup(this.signupToken, this.name, this.role), (user) => this.goOn(user));
+    this.run(
+      this.auth.signup(this.signupToken, this.name, this.role),
+      (user) => this.goOn(user),
+      (error) => {
+        // The sign-up window closed: start again with a fresh code.
+        if (error.status !== 401) return false;
+        this.signupToken = '';
+        this.step.set('email');
+        this.error.set('Your sign-up expired. Please request a new code.');
+        return true;
+      },
+    );
   }
 
   // ---------- helpers ----------
@@ -82,7 +94,12 @@ export class Login {
     this.router.navigateByUrl(safeNext ?? this.auth.homeFor(user));
   }
 
-  private run<T>(request: Observable<T>, onSuccess: (value: T) => void): void {
+  /** Runs a request. onError returns true when it handled the error itself. */
+  private run<T>(
+    request: Observable<T>,
+    onSuccess: (value: T) => void,
+    onError?: (error: HttpErrorResponse) => boolean,
+  ): void {
     this.busy.set(true);
     this.error.set('');
     request.subscribe({
@@ -90,9 +107,11 @@ export class Login {
         this.busy.set(false);
         onSuccess(value);
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         this.busy.set(false);
-        this.error.set(apiErrorMessage(error));
+        if (!onError?.(error)) {
+          this.error.set(apiErrorMessage(error));
+        }
       },
     });
   }

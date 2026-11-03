@@ -29,7 +29,7 @@ from app.models import User
 
 SESSION_COOKIE = "bh_session"
 TOKEN_ALGORITHM = "HS256"
-SIGNUP_TOKEN_MINUTES = 10  # time to finish sign-up after the OTP is correct
+SIGNUP_TOKEN_MINUTES = 5  # time to finish sign-up after the OTP is correct
 
 # A practical email check: something@something.tld, no spaces.
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
