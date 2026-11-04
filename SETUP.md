@@ -20,6 +20,7 @@ A step-by-step runbook to recreate **everything** in a fresh AWS account: Terraf
 - [11. Update docs and local config](#11-update-docs-and-local-config)
 - [12. Optional: retire the old account](#12-optional-retire-the-old-account)
 - [13. Delete test data](#13-delete-test-data)
+- [14. Manage accounts from the command line](#14-manage-accounts-from-the-command-line)
 - [Using a region other than ap-south-1](#using-a-region-other-than-ap-south-1)
 - [Troubleshooting](#troubleshooting)
 
@@ -397,6 +398,39 @@ Rules that protect you:
 - The delete step only works after a check, and only if the inputs have not changed since the check.
 
 **Check:** run step 5 again with the same emails. Each deleted account now shows under "not found".
+
+## 14. Manage accounts from the command line
+
+Create, list, update and delete **admins, owners and renters** with `app.cli`. The commands run on your laptop against the dev database. They use the same rules as the app: an account's godowns, bookings and photos go with it when it is deleted (see step 13).
+
+Point the shell at dev once, from the repo root:
+
+```bash
+cd backend
+export DB_MODE=dsql
+export DSQL_ENDPOINT="$(terraform -chdir=../infra/envs/dev output -raw dsql_endpoint)"
+```
+
+| Action | Command | Notes |
+|---|---|---|
+| Create admin | `.venv/bin/python -m app.cli create-admin --email <email> --name "<name>"` | |
+| Create owner | `.venv/bin/python -m app.cli create-owner --email <email> --name "<name>"` | |
+| Create renter | `.venv/bin/python -m app.cli create-renter --email <email> --name "<name>"` | |
+| List admins | `.venv/bin/python -m app.cli list-admins` | Also `list-owners`, `list-renters` |
+| Update name or status | `.venv/bin/python -m app.cli update-account --email <email> --role ADMIN --status SUSPENDED` | `--role` is `ADMIN`, `OWNER` or `RENTER`. Add `--name "<name>"` to rename. `SUSPENDED` blocks login; `ACTIVE` restores it |
+| Delete admin | `.venv/bin/python -m app.cli delete-admin --email <email>` | Preview only. Add `--yes` to delete |
+| Delete owner | `.venv/bin/python -m app.cli delete-owner --email <email>` | Preview only. Add `--yes` to delete |
+| Delete renter | `.venv/bin/python -m app.cli delete-renter --email <email>` | Preview only. Add `--yes` to delete |
+
+Rules to know:
+
+- **Create** adds the role to an existing account and leaves the rest alone. Running it twice is safe.
+- **Update** needs `--name`, `--status`, or both. It refuses to suspend the only active admin.
+- **Delete** runs the preview first. Read it, then run the same command with `--yes`. The account must have the role you name. An account with more than one role is deleted whole, and the preview says so.
+- The last admin can't be deleted. Create the new admin first.
+- **Emails don't depend on case.** The command lower-cases them before it looks them up.
+
+Run `unset DB_MODE DSQL_ENDPOINT` to point the same shell back at the local database.
 
 ## Using a region other than ap-south-1
 

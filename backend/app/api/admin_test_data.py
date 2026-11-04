@@ -47,7 +47,10 @@ def summary(chosen: cleanup.Plan, *, deleted: bool, photo_files_left: int = 0) -
 @router.post("/preview", response_model=CleanupOut)
 def preview(body: CleanupIn, admin: AdminUser, session: DbSession):
     chosen = cleanup.plan(
-        session, admin=admin, raw_emails=body.emails, warehouse_ids=body.warehouse_ids
+        session,
+        protected_email=admin.email,
+        raw_emails=body.emails,
+        warehouse_ids=body.warehouse_ids,
     )
     return summary(chosen, deleted=False)
 
@@ -55,7 +58,10 @@ def preview(body: CleanupIn, admin: AdminUser, session: DbSession):
 @router.post("/delete", response_model=CleanupOut)
 def delete(body: CleanupDeleteIn, admin: AdminUser, session: DbSession):
     chosen = cleanup.plan(
-        session, admin=admin, raw_emails=body.emails, warehouse_ids=body.warehouse_ids
+        session,
+        protected_email=admin.email,
+        raw_emails=body.emails,
+        warehouse_ids=body.warehouse_ids,
     )
     if not chosen.user_ids and not chosen.warehouse_ids:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Nothing matches those emails or IDs")

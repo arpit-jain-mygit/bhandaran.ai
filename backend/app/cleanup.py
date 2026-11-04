@@ -58,7 +58,7 @@ class Plan:
 def plan(
     session: Session,
     *,
-    admin: User,
+    protected_email: str | None,
     raw_emails: list[str],
     warehouse_ids: list[uuid.UUID],
 ) -> Plan:
@@ -70,7 +70,7 @@ def plan(
         emails = sorted({normalize_email(raw) for raw in raw_emails})
     except ValueError as error:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
-    if admin.email in emails:
+    if protected_email in emails:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, "You can't delete your own account"
         )
