@@ -111,6 +111,14 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/settings/settings-admin').then((m) => m.SettingsAdmin),
   },
 
+  // "/admin/test-data" - delete test accounts and godowns (admins only).
+  {
+    path: 'admin/test-data',
+    title: 'Delete test data - bhandaran.ai',
+    canActivate: [roleGuard('ADMIN')],
+    loadComponent: () => import('./admin/test-data/test-data-admin').then((m) => m.TestDataAdmin),
+  },
+
   // Any unknown URL goes back to Home.
   { path: '**', redirectTo: '' },
 ];

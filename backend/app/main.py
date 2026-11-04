@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.api import (
+    admin_test_data,
     admin_warehouse,
     auth,
     booking,
@@ -38,5 +39,6 @@ app.include_router(settings.router)
 app.include_router(profile.router)
 app.include_router(warehouse.router)
 app.include_router(admin_warehouse.router)
+app.include_router(admin_test_data.router)
 app.include_router(search.router)
 app.include_router(booking.router)

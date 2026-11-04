@@ -57,18 +57,20 @@ def create(client, headers=OWNER_HEADERS, **changes):
     return client.post("/api/warehouses", json=listing_body(**changes), headers=headers)
 
 
-def add_photo(client, warehouse_id, content_type="image/jpeg", size=2_000_000):
+def add_photo(
+    client, warehouse_id, content_type="image/jpeg", size=2_000_000, headers=OWNER_HEADERS
+):
     """Full photo flow: ask for a link, 'upload' the file, confirm it."""
     asked = client.post(
         f"/api/warehouses/{warehouse_id}/photos",
         json={"content_type": content_type},
-        headers=OWNER_HEADERS,
+        headers=headers,
     ).json()
     extension = photos.ALLOWED_TYPES[content_type]
     key = f"warehouses/{warehouse_id}/{asked['photo_id']}.{extension}"
     STORED[key] = {"size": size, "content_type": content_type}
     return client.post(
-        f"/api/warehouses/{warehouse_id}/photos/{asked['photo_id']}/confirm", headers=OWNER_HEADERS
+        f"/api/warehouses/{warehouse_id}/photos/{asked['photo_id']}/confirm", headers=headers
     )
 
 

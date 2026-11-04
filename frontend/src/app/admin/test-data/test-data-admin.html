@@ -1,0 +1,81 @@
+<!-- Admin > Delete test data: check first, then type DELETE to remove. -->
+<app-admin-header />
+<h1>Delete test data</h1>
+<p class="intro">
+  Removes the accounts and godowns you list, with everything that belongs to them: bookings, photos,
+  login codes and owner settings. An owner's godowns go with the owner. Renters the owner invited
+  are kept. Your own account can't be removed. This can't be undone.
+</p>
+
+<section class="card">
+  <label for="emails"><app-icon name="mail" [size]="15" /> Emails of accounts to remove</label>
+  <textarea
+    id="emails"
+    name="emails"
+    rows="3"
+    placeholder="owner1@example.test, renter1@example.test"
+    [(ngModel)]="emailsText"
+    (ngModelChange)="inputsChanged()"
+  ></textarea>
+
+  <label for="godowns"
+    ><app-icon name="warehouse" [size]="15" /> Godown IDs to remove (optional)</label
+  >
+  <textarea
+    id="godowns"
+    name="godowns"
+    rows="2"
+    placeholder="Paste godown IDs, from the godown's page address"
+    [(ngModel)]="godownsText"
+    (ngModelChange)="inputsChanged()"
+  ></textarea>
+
+  <div class="actions">
+    <button type="button" class="secondary" [disabled]="busy()" (click)="check()">
+      <app-icon name="search" /> Check what will be removed
+    </button>
+  </div>
+</section>
+
+@if (busy()) {
+  <p class="loading"><app-grain-loader [size]="24" label="Please wait" /> Please wait…</p>
+}
+@if (error()) {
+  <p class="msg error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p class="msg notice" role="status">{{ notice() }}</p>
+}
+
+@if (plan(); as plan) {
+  <section class="card preview">
+    <h2>This will remove</h2>
+    <ul>
+      <li>
+        Accounts: {{ plan.accounts.length }}
+        @if (plan.accounts.length) {
+          <span class="muted">({{ plan.accounts.join(', ') }})</span>
+        }
+      </li>
+      <li>Godowns: {{ plan.warehouses }}</li>
+      <li>Bookings: {{ plan.bookings }}</li>
+      <li>Photos: {{ plan.photos }} (files are removed from storage too)</li>
+      <li>Login codes: {{ plan.login_codes }}</li>
+      <li>Owner settings: {{ plan.owner_settings }}</li>
+      <li>Mail suppression entries: {{ plan.suppressed_emails }}</li>
+      <li>Renters released from their owner: {{ plan.invitees_released }}</li>
+    </ul>
+    @if (plan.missing_emails.length) {
+      <p class="muted">Not found: {{ plan.missing_emails.join(', ') }}</p>
+    }
+    @if (plan.missing_warehouse_ids.length) {
+      <p class="muted">Godown IDs not found: {{ plan.missing_warehouse_ids.join(', ') }}</p>
+    }
+
+    <label for="confirm">Type DELETE to confirm</label>
+    <input id="confirm" name="confirm" autocomplete="off" [(ngModel)]="confirmText" />
+    <button type="button" class="danger" [disabled]="!canDelete()" (click)="remove()">
+      <app-icon name="trash" /> Delete permanently
+    </button>
+  </section>
+}

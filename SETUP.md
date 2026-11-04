@@ -19,6 +19,7 @@ A step-by-step runbook to recreate **everything** in a fresh AWS account: Terraf
 - [10. Manual follow-ups](#10-manual-follow-ups)
 - [11. Update docs and local config](#11-update-docs-and-local-config)
 - [12. Optional: retire the old account](#12-optional-retire-the-old-account)
+- [13. Delete test data](#13-delete-test-data)
 - [Using a region other than ap-south-1](#using-a-region-other-than-ap-south-1)
 - [Troubleshooting](#troubleshooting)
 
@@ -30,6 +31,7 @@ A step-by-step runbook to recreate **everything** in a fresh AWS account: Terraf
 4. Each step ends with a **Check**. Do not continue until the check passes.
 5. If an `apply` is blocked by your tool's permission system (IAM roles are created in steps 4 and 5), **stop and ask the human** to run that exact command - do not try another way around it.
 6. Step 12 (deleting the old account's resources) is **destructive**: only do it when the human explicitly asks.
+7. Step 13 (deleting test data) is **destructive**: prepare the check, but the human clicks **Delete permanently** themselves.
 
 ## What gets built
 
@@ -367,6 +369,34 @@ Then commit the doc changes (not the git-ignored files).
 1. `terraform -chdir=infra/envs/dev destroy` (dev has deletion protection off and `force_destroy` on, so the DSQL cluster and buckets go too).
 2. `terraform -chdir=infra/envs/shared destroy` (keeps the OIDC provider if `create_oidc_provider` was `false`).
 3. The state bucket has `prevent_destroy`: empty it and delete it in the console, or temporarily remove the `lifecycle` block in `infra/bootstrap/main.tf`, destroy, then restore the block.
+
+## 13. Delete test data
+
+Removes test accounts and godowns from the dev database. **Destructive and not reversible** - the human runs the delete step.
+
+Only an **admin** can do this. Admins are created with the CLI (`create-admin`), not in the app.
+
+1. Log in at `<web_url>/login` with an admin email. The 6-digit code is emailed to that address.
+2. Open `<web_url>/admin/test-data`, or pick **Delete test data** in the admin menu.
+3. Enter the emails of the accounts to remove, separated by commas or new lines.
+4. To remove a single godown, also enter its ID. The ID is the last part of the godown's address, for example `/owner/warehouses/<id>`.
+5. Click **Check what will be removed** and read the list. Nothing is deleted yet.
+6. Type `DELETE` in the box (exactly, in capitals) and click **Delete permanently**.
+7. Read the summary. Any "not found" emails or IDs were already gone or never existed.
+
+What gets removed:
+
+- **An account:** its roles, login codes, owner settings, and mail suppression entries.
+- **An owner's godowns:** the godowns, their stock types, their photos (the files in S3 too), and all their bookings.
+- **A renter's bookings:** the bookings they hold.
+- **Renters an owner invited:** they are kept, but no longer linked to that owner.
+
+Rules that protect you:
+
+- An admin **cannot delete their own account**. To remove an admin, log in as a different admin.
+- The delete step only works after a check, and only if the inputs have not changed since the check.
+
+**Check:** run step 5 again with the same emails. Each deleted account now shows under "not found".
 
 ## Using a region other than ap-south-1
 
