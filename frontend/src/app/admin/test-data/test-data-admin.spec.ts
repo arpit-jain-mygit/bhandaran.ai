@@ -87,4 +87,18 @@ describe('TestDataAdmin', () => {
 
     httpMock.expectNone('/api/admin/test-data/preview');
   });
+
+  it('explains when a godown name is typed instead of its ID', () => {
+    const fixture = TestBed.createComponent(TestDataAdmin);
+    const page = fixture.componentInstance as unknown as Page & {
+      godownsText: string;
+      error(): string;
+    };
+    page.godownsText = 'Kesar-Big';
+
+    page.check();
+
+    httpMock.expectNone('/api/admin/test-data/preview');
+    expect(fixture.componentInstance['error']()).toContain('not a godown ID');
+  });
 });

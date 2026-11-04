@@ -12,6 +12,8 @@ import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 import { Icon } from '../../shared/icon/icon';
 import { AdminHeader } from '../admin-header/admin-header';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Emails and IDs can be separated by commas, spaces or new lines.
 function split(text: string): string[] {
   return [
@@ -54,6 +56,13 @@ export class TestDataAdmin {
 
   protected check(): void {
     const request = this.request();
+    const badId = request.warehouse_ids.find((id) => !UUID_PATTERN.test(id));
+    if (badId) {
+      this.error.set(
+        `"${badId}" is not a godown ID. IDs look like 3f2b8a1c-1234-4abc-8def-0123456789ab. Use the ID from the godown's page address, not its name.`,
+      );
+      return;
+    }
     if (!request.emails.length && !request.warehouse_ids.length) {
       this.error.set('Enter at least one email or godown ID.');
       return;
