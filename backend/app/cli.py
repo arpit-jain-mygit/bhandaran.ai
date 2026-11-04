@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from app import cleanup
 from app.auth import mask_email, normalize_email
+from app.config import get_settings
 from app.db import get_engine
 from app.models import User, UserRole
 
@@ -138,6 +139,13 @@ def delete_account(email_raw: str, role: str, confirmed: bool) -> list[str]:
             lines.append(f"Note: this account also has {', '.join(others)}. It is deleted whole.")
         if not confirmed:
             return [*lines, "Nothing deleted. Run again with --yes to delete."]
+        if chosen.photo_keys and not get_settings().photo_bucket:
+            # Without the bucket name the photo files could not be removed,
+            # so refuse before the photo rows are deleted.
+            raise ValueError(
+                f"Set PHOTO_BUCKET to the photos bucket to remove {len(chosen.photo_keys)} "
+                "photo file(s) too, then run again"
+            )
 
         photo_keys = cleanup.remove(session, chosen)
         session.commit()

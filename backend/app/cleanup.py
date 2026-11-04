@@ -159,7 +159,7 @@ def delete_photo_files(keys: list[str]) -> int:
     for key in keys:
         try:
             photos.delete_object(key)
-        except Exception:  # best effort: the rows are already gone
-            log.warning("Could not delete photo file %s", key, exc_info=True)
+        except Exception as error:  # best effort: the rows are already gone
+            log.warning("Could not delete photo file %s: %s", key, error)
             failed += 1
     return failed

@@ -3,11 +3,12 @@
 # Each test makes its own accounts, so their emails are unique.
 # ---------------------------------------------------------------
 import uuid
+from types import SimpleNamespace
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app import cli
+from app import cleanup, cli
 from app.db import get_engine
 from app.models import User, UserRole
 from tests.conftest import make_user
@@ -210,3 +211,19 @@ def test_update_account_needs_something_to_change(capsys):
 
     assert code == 1
     assert "Give --name and/or --status" in capsys.readouterr().err
+
+
+def test_delete_refuses_when_photo_files_cannot_be_removed(capsys, monkeypatch):
+    target = unique_email("has-photos")
+    with Session(get_engine()) as session:
+        make_user(session, target, "Has Photos", "RENTER")
+        session.commit()
+    chosen = cleanup.Plan(accounts=["ha***@example.test"], photo_keys=["warehouses/x/y.jpg"])
+    monkeypatch.setattr(cleanup, "plan", lambda *args, **kwargs: chosen)
+    monkeypatch.setattr(cli, "get_settings", lambda: SimpleNamespace(photo_bucket=""))
+
+    code = cli.main(["delete-renter", "--email", target, "--yes"])
+
+    assert code == 1
+    assert "Set PHOTO_BUCKET" in capsys.readouterr().err
+    assert account_exists(target)

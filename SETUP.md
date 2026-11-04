@@ -409,6 +409,7 @@ Point the shell at dev once, from the repo root:
 cd backend
 export DB_MODE=dsql
 export DSQL_ENDPOINT="$(terraform -chdir=../infra/envs/dev output -raw dsql_endpoint)"
+export PHOTO_BUCKET="$(terraform -chdir=../infra/envs/dev output -raw photos_bucket_name)"
 ```
 
 | Action | Command | Notes |
@@ -427,10 +428,12 @@ Rules to know:
 - **Create** adds the role to an existing account and leaves the rest alone. Running it twice is safe.
 - **Update** needs `--name`, `--status`, or both. It refuses to suspend the only active admin.
 - **Delete** runs the preview first. Read it, then run the same command with `--yes`. The account must have the role you name. An account with more than one role is deleted whole, and the preview says so.
+- **Photo files:** `PHOTO_BUCKET` must be set before a delete with `--yes` if the account has godown photos. Without it the command refuses and deletes nothing. The export above sets it.
 - The last admin can't be deleted. Create the new admin first.
+- **Orphaned photos:** if S3 fails to delete a file, the command logs its key and still removes the database rows. Remove the file yourself with `aws s3 rm s3://<photos_bucket_name>/<key>`.
 - **Emails don't depend on case.** The command lower-cases them before it looks them up.
 
-Run `unset DB_MODE DSQL_ENDPOINT` to point the same shell back at the local database.
+Run `unset DB_MODE DSQL_ENDPOINT PHOTO_BUCKET` to point the same shell back at the local database.
 
 ## Using a region other than ap-south-1
 
