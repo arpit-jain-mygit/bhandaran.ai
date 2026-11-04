@@ -9,8 +9,13 @@
 # The renter is found by email, or created as an unclaimed renter
 # (like an invite, M4). Whether the renter must confirm, and what
 # happens after the timeout, follows the booking rules (M2).
+#
+# Owner-only record: with no renter email, the booking is saved as
+# confirmed, with just the renter's name and phone. No account, no
+# emails, and no confirmation.
 # ---------------------------------------------------------------
 import logging
+import re
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
@@ -48,6 +53,8 @@ OwnerUser = Annotated[User, Depends(require_owner)]
 RenterUser = Annotated[User, Depends(require_renter)]
 
 MAX_ATTEMPTS = 3
+# A 10-digit Indian mobile number, optionally with +91; spaces and dashes are dropped.
+MOBILE = re.compile(r"^(\+91)?[6-9]\d{9}$")
 
 
 # ---------- helpers ----------
@@ -57,7 +64,7 @@ def booking_out(session: Session, booking: Booking) -> BookingOut:
     warehouse = session.get(Warehouse, booking.warehouse_id)
     city = session.get(City, warehouse.city_id) if warehouse else None
     owner = session.get(User, booking.owner_id)
-    renter = session.get(User, booking.renter_id)
+    renter = session.get(User, booking.renter_id) if booking.renter_id else None
     stock = session.get(StockType, booking.stock_type_id)
     unit = session.get(Unit, warehouse.unit_id) if warehouse else None
     return BookingOut(
@@ -66,8 +73,9 @@ def booking_out(session: Session, booking: Booking) -> BookingOut:
         warehouse_name=warehouse.name if warehouse else "",
         city_name=city.name if city else None,
         owner_name=owner.name if owner else None,
-        renter_name=renter.name if renter else None,
+        renter_name=renter.name if renter else booking.renter_name,
         renter_email=renter.email if renter else None,
+        renter_phone=booking.renter_phone,
         stock_type_name=stock.name if stock else None,
         unit_name=unit.name if unit else None,
         quantity=booking.quantity,
@@ -87,7 +95,18 @@ def unprocessable(message: str) -> HTTPException:
     return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, message)
 
 
-def check_request(session: Session, owner: User, body: OfflineBookingIn) -> tuple[Warehouse, str]:
+def clean_phone(raw: str) -> str | None:
+    if not raw.strip():
+        return None
+    number = re.sub(r"[\s-]", "", raw)
+    if not MOBILE.match(number):
+        raise unprocessable("Enter a 10-digit mobile number, e.g. 98765 43210")
+    return number
+
+
+def check_request(
+    session: Session, owner: User, body: OfflineBookingIn
+) -> tuple[Warehouse, str | None]:
     """Everything that can be checked before touching capacity."""
     warehouse = session.get(Warehouse, body.warehouse_id)
     if warehouse is None or warehouse.owner_id != owner.id:
@@ -108,6 +127,8 @@ def check_request(session: Session, owner: User, body: OfflineBookingIn) -> tupl
         raise unprocessable("The booking has already ended")
     if body.quantity > warehouse.capacity:
         raise unprocessable(f"This godown holds at most {warehouse.capacity}")
+    if not body.renter_email.strip():
+        return warehouse, None  # owner-only record
     try:
         email = normalize_email(body.renter_email)
     except ValueError as error:
@@ -171,12 +192,19 @@ def tell_renter(booking: BookingOut, needs_confirmation: bool, is_new: bool) -> 
 @router.post("", response_model=BookingOut, status_code=status.HTTP_201_CREATED)
 def record_offline_booking(body: OfflineBookingIn, owner: OwnerUser, session: DbSession):
     warehouse, email = check_request(session, owner, body)
+    renter_phone = clean_phone(body.renter_phone)
+    if email is None and not body.renter_name.strip():
+        raise unprocessable("Enter the renter's name")
     rules = effective_settings(session, owner.id)
-    needs_confirmation = bool(rules["offline_booking_requires_renter_confirmation"].value)
+    # Owner-only records are always confirmed; the renter isn't asked.
+    needs_confirmation = email is not None and bool(
+        rules["offline_booking_requires_renter_confirmation"].value
+    )
     timeout_days = int(rules["renter_confirmation_timeout_days"].value)
     timeout_action = str(rules["on_timeout_action"].value)
     warehouse_id = warehouse.id
 
+    is_new = False
     for attempt in range(1, MAX_ATTEMPTS + 1):
         try:
             # Lock the godown row: two bookings for the same godown can't both
@@ -193,18 +221,22 @@ def record_offline_booking(body: OfflineBookingIn, owner: OwnerUser, session: Db
                     f"Only {max(free, 0)} free for those dates",
                 )
 
-            renter, is_new = find_or_add_renter(session, owner, email, body.renter_name)
-            if is_suppressed(session, email) and is_new:
-                session.rollback()
-                raise unprocessable(
-                    "This address can't receive our emails. Please use another address."
-                )
+            renter: User | None = None
+            if email is not None:
+                renter, is_new = find_or_add_renter(session, owner, email, body.renter_name)
+                if is_suppressed(session, email) and is_new:
+                    session.rollback()
+                    raise unprocessable(
+                        "This address can't receive our emails. Please use another address."
+                    )
 
             now = datetime.now(UTC)
             booking = Booking(
                 warehouse_id=warehouse_id,
                 owner_id=owner.id,
-                renter_id=renter.id,
+                renter_id=renter.id if renter else None,
+                renter_name=None if renter else body.renter_name.strip(),
+                renter_phone=None if renter else renter_phone,
                 stock_type_id=body.stock_type_id,
                 quantity=body.quantity,
                 start_date=body.start_date,
@@ -236,7 +268,8 @@ def record_offline_booking(body: OfflineBookingIn, owner: OwnerUser, session: Db
 
     session.refresh(booking)
     out = booking_out(session, booking)
-    tell_renter(out, needs_confirmation, is_new)
+    if email is not None:
+        tell_renter(out, needs_confirmation, is_new)
     return out
 
 

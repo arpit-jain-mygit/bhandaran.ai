@@ -16,9 +16,12 @@ class OfflineBookingIn(BaseModel):
     """What an owner enters for a deal made in person or by phone."""
 
     warehouse_id: uuid.UUID
-    renter_email: str
+    # Leave the email empty for an owner-only record: no account, no
+    # emails, and no renter confirmation. Then the name is required.
+    renter_email: str = ""
     # Needed only when the renter has no account yet.
     renter_name: OptionalName = ""
+    renter_phone: str = ""
     stock_type_id: uuid.UUID
     quantity: int = Field(gt=0, le=10_000_000)
     start_date: date
@@ -34,6 +37,7 @@ class BookingOut(BaseModel):
     owner_name: str | None
     renter_name: str | None
     renter_email: str | None
+    renter_phone: str | None
     stock_type_name: str | None
     unit_name: str | None
     quantity: int

@@ -35,7 +35,10 @@ class Booking(UuidPkMixin, TimestampMixin, Base):
 
     warehouse_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
     owner_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
-    renter_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
+    # Empty for an owner-only record (no renter account): see renter_name.
+    renter_id: Mapped[uuid.UUID | None] = mapped_column(nullable=True)
+    renter_name: Mapped[str | None] = mapped_column(String(100))
+    renter_phone: Mapped[str | None] = mapped_column(String(16))
     stock_type_id: Mapped[uuid.UUID] = mapped_column(nullable=False)
     # In the godown's unit (e.g. bags).
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)

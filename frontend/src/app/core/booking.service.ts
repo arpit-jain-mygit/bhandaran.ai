@@ -17,6 +17,7 @@ export interface Booking {
   owner_name: string | null;
   renter_name: string | null;
   renter_email: string | null;
+  renter_phone: string | null;
   stock_type_name: string | null;
   unit_name: string | null;
   quantity: number;
@@ -33,8 +34,10 @@ export interface Booking {
 
 export interface OfflineBookingInput {
   warehouse_id: string;
+  // Empty email = owner-only record: no account, no emails, no confirmation.
   renter_email: string;
   renter_name: string;
+  renter_phone: string;
   stock_type_id: string;
   quantity: number;
   start_date: string;

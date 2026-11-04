@@ -43,6 +43,7 @@ export class OwnerBookings implements OnInit {
   protected warehouseId = '';
   protected renterEmail = '';
   protected renterName = '';
+  protected renterPhone = '';
   protected stockTypeId = '';
   protected quantity: number | null = null;
   protected startDate = '';
@@ -96,13 +97,26 @@ export class OwnerBookings implements OnInit {
   protected formProblems(): string[] {
     const problems: string[] = [];
     if (!this.warehouseId) problems.push('a godown');
-    if (!this.renterEmail.trim()) problems.push("the renter's email");
+    if (!this.renterEmail.trim() && !this.renterName.trim()) {
+      problems.push("the renter's name (or their email)");
+    }
     if (!this.stockTypeId) problems.push('a stock type');
     if (!this.quantity || this.quantity < 1) problems.push('the space');
     if (!this.startDate || !this.endDate) problems.push('the dates');
     else if (this.endDate < this.startDate) problems.push('an end date after the start');
     if (!/^\d+(\.\d{1,2})?$/.test(this.rate.trim())) problems.push('the agreed rate');
     return problems;
+  }
+
+  /** What to tell the owner after saving (no email is sent for a record only). */
+  private savedMessage(booking: Booking): string {
+    if (booking.status === 'PENDING_RENTER_CONFIRMATION') {
+      return `Booking saved. ${booking.renter_email} has been asked to confirm it.`;
+    }
+    if (!booking.renter_email) {
+      return `Recorded for ${booking.renter_name}. No account or email was made for them.`;
+    }
+    return 'Booking saved.';
   }
 
   protected save(): void {
@@ -115,6 +129,7 @@ export class OwnerBookings implements OnInit {
         warehouse_id: this.warehouseId,
         renter_email: this.renterEmail.trim(),
         renter_name: this.renterName.trim(),
+        renter_phone: this.renterPhone.trim(),
         stock_type_id: this.stockTypeId,
         quantity: Number(this.quantity),
         start_date: this.startDate,
@@ -125,13 +140,9 @@ export class OwnerBookings implements OnInit {
         next: (booking) => {
           this.busy.set(false);
           this.rows.update((rows) => [booking, ...rows]);
-          this.notice.set(
-            booking.status === 'PENDING_RENTER_CONFIRMATION'
-              ? `Booking saved. ${booking.renter_email} has been asked to confirm it.`
-              : 'Booking saved.',
-          );
+          this.notice.set(this.savedMessage(booking));
           this.showForm.set(false);
-          this.renterEmail = this.renterName = '';
+          this.renterEmail = this.renterName = this.renterPhone = '';
           this.quantity = null;
         },
         error: (error) => {

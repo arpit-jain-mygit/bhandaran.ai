@@ -24,7 +24,10 @@
   @if (showForm()) {
     <form class="card" (ngSubmit)="save()">
       <h2>Record a booking</h2>
-      <p class="muted small">For a deal agreed in person or by phone.</p>
+      <p class="muted small">
+        For a deal agreed in person or by phone. Leave the email empty to keep a record only: no
+        account, no emails and no confirmation from the renter.
+      </p>
 
       <label for="godown">Godown</label>
       <app-combobox
@@ -38,14 +41,23 @@
 
       <div class="row">
         <div>
-          <label for="renter-email">Renter's email</label>
+          <label for="renter-email">Renter's email <span class="muted">(optional)</span></label>
           <input id="renter-email" name="renterEmail" type="email" [(ngModel)]="renterEmail" />
         </div>
         <div>
-          <label for="renter-name">Renter's name <span class="muted">(if new)</span></label>
+          <label for="renter-name">Renter's name</label>
           <input id="renter-name" name="renterName" maxlength="100" [(ngModel)]="renterName" />
         </div>
       </div>
+
+      <label for="renter-phone">Renter's mobile <span class="muted">(optional)</span></label>
+      <input
+        id="renter-phone"
+        name="renterPhone"
+        inputmode="tel"
+        placeholder="98765 43210"
+        [(ngModel)]="renterPhone"
+      />
 
       <div class="row">
         <div>
@@ -118,7 +130,7 @@
               <td data-label="Godown">{{ b.warehouse_name }}</td>
               <td data-label="Renter">
                 {{ b.renter_name || b.renter_email }}<br /><span class="muted small">{{
-                  b.renter_email
+                  b.renter_email || b.renter_phone
                 }}</span>
               </td>
               <td data-label="Stock">{{ b.stock_type_name }}</td>

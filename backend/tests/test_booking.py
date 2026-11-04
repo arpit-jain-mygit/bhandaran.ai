@@ -267,3 +267,12 @@ def test_repeated_conflicts_give_a_try_again_message(client, monkeypatch):
     response = book(client, listing)
     assert response.status_code == 409
     assert "try again" in response.json()["detail"]
+
+
+def test_owner_only_record_ignores_the_renter_confirmation_rule(client, rules):
+    rules("offline_booking_requires_renter_confirmation", True)
+    listing = godown(client)
+
+    body = book(client, listing, renter_email="", renter_name="No Confirm").json()
+
+    assert body["status"] in ("CONFIRMED", "ACTIVE")
