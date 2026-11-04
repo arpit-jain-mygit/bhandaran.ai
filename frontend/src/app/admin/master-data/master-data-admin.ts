@@ -8,10 +8,11 @@
 //   Districts tab      - pick a state, manage its districts
 //   Cities / Towns tab - pick a state, then a district, manage its towns
 // ---------------------------------------------------------------
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 
+import { Combobox, optionsFrom } from '../../shared/combobox/combobox';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 import { AdminHeader } from '../admin-header/admin-header';
 import { apiErrorMessage } from '../../core/api-error';
@@ -49,7 +50,7 @@ export const TABS: Tab[] = [
 
 @Component({
   selector: 'app-master-data-admin',
-  imports: [FormsModule, GrainLoader, AdminHeader],
+  imports: [FormsModule, GrainLoader, AdminHeader, Combobox],
   templateUrl: './master-data-admin.html',
   styleUrl: './master-data-admin.scss',
 })
@@ -67,6 +68,14 @@ export class MasterDataAdmin implements OnInit {
   protected readonly states = signal<LookupItem[]>([]);
   protected readonly stateId = signal<string>('');
   protected readonly districts = signal<District[]>([]);
+  protected readonly stateOptions = computed(() => optionsFrom(this.states()));
+  // Disabled districts stay pickable here (to manage their towns), marked as such.
+  protected readonly districtOptions = computed(() =>
+    this.districts().map((d) => ({
+      value: d.id,
+      label: d.is_active ? d.name : `${d.name} (disabled)`,
+    })),
+  );
   protected readonly districtId = signal<string>('');
 
   // Feedback for the admin.

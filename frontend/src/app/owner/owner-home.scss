@@ -118,3 +118,16 @@ button.link {
   color: var(--muted);
   font-weight: 500;
 }
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}

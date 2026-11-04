@@ -9,10 +9,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../core/api-error';
 import { SearchDetail, SearchService } from '../core/search.service';
 import { GrainLoader } from '../shared/grain-loader/grain-loader';
+import { Icon } from '../shared/icon/icon';
 
 @Component({
   selector: 'app-godown-detail',
-  imports: [RouterLink, GrainLoader],
+  imports: [RouterLink, GrainLoader, Icon],
   templateUrl: './godown-detail.html',
   styleUrl: './godown-detail.scss',
 })

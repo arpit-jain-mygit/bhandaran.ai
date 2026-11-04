@@ -8,6 +8,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../core/api-error';
 import { SearchResult, SearchService } from '../core/search.service';
 import { GrainLoader } from '../shared/grain-loader/grain-loader';
+import { Icon } from '../shared/icon/icon';
 
 // Only these URL parameters are sent to the API.
 const FILTERS = [
@@ -23,7 +24,7 @@ const FILTERS = [
 
 @Component({
   selector: 'app-search-results',
-  imports: [RouterLink, GrainLoader],
+  imports: [RouterLink, GrainLoader, Icon],
   templateUrl: './search-results.html',
   styleUrl: './search-results.scss',
 })

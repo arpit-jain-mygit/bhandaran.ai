@@ -12,11 +12,13 @@ import { apiErrorMessage } from '../../core/api-error';
 import { Booking, BookingService, bookingStatusLabel } from '../../core/booking.service';
 import { LookupItem, MasterDataService } from '../../core/master-data.service';
 import { Warehouse, WarehouseService } from '../../core/warehouse.service';
+import { ComboOption, Combobox } from '../../shared/combobox/combobox';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
+import { Icon } from '../../shared/icon/icon';
 
 @Component({
   selector: 'app-owner-bookings',
-  imports: [FormsModule, RouterLink, DatePipe, GrainLoader],
+  imports: [FormsModule, RouterLink, DatePipe, GrainLoader, Combobox, Icon],
   templateUrl: './owner-bookings.html',
   styleUrl: './owner-bookings.scss',
 })
@@ -34,6 +36,8 @@ export class OwnerBookings implements OnInit {
   protected readonly notice = signal('');
   protected readonly statusLabel = bookingStatusLabel;
   private stockNames: Record<string, string> = {};
+  protected godownOptions: ComboOption[] = [];
+  protected stockOptions: ComboOption[] = [];
 
   // Form fields.
   protected warehouseId = '';
@@ -54,6 +58,10 @@ export class OwnerBookings implements OnInit {
       next: ({ rows, godowns, stock }) => {
         this.rows.set(rows);
         this.godowns.set(godowns.filter((g) => g.status === 'APPROVED'));
+        this.godownOptions = this.godowns().map((g) => ({
+          value: g.id,
+          label: `${g.name} (${g.city_name})`,
+        }));
         this.stockNames = Object.fromEntries(stock.map((s: LookupItem) => [s.id, s.name]));
         this.loading.set(false);
       },
@@ -78,6 +86,10 @@ export class OwnerBookings implements OnInit {
     this.stockTypeId = '';
     const godown = this.selectedGodown();
     if (godown) this.rate = godown.price_per_unit_month;
+    this.stockOptions = (godown?.stock_type_ids ?? []).map((stockId) => ({
+      value: stockId,
+      label: this.stockName(stockId),
+    }));
   }
 
   /** Required fields still empty, in plain words (empty = ready). */

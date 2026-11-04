@@ -2,18 +2,20 @@
 // My profile (M4): name, city and optional GST number. Every role
 // (owner, renter, admin) can edit their own.
 // ---------------------------------------------------------------
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { apiErrorMessage } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
 import { City, MasterDataService } from '../core/master-data.service';
 import { Profile, ProfileService } from '../core/profile.service';
+import { Combobox, optionsFrom } from '../shared/combobox/combobox';
 import { GrainLoader } from '../shared/grain-loader/grain-loader';
+import { Icon } from '../shared/icon/icon';
 
 @Component({
   selector: 'app-profile-page',
-  imports: [FormsModule, GrainLoader],
+  imports: [FormsModule, GrainLoader, Combobox, Icon],
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.scss',
 })
@@ -27,6 +29,7 @@ export class ProfilePage implements OnInit {
   protected readonly error = signal('');
   protected readonly notice = signal('');
   protected readonly cities = signal<City[]>([]);
+  protected readonly cityOptions = computed(() => optionsFrom(this.cities()));
   protected readonly profile = signal<Profile | null>(null);
 
   protected name = '';

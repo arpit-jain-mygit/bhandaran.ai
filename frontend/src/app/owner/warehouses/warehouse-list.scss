@@ -94,3 +94,9 @@ h2 {
 .note {
   color: var(--bad);
 }
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}

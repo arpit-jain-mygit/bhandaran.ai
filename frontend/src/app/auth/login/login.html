@@ -7,7 +7,7 @@
       <p class="muted">We'll email you a 6-digit code.</p>
 
       <form (ngSubmit)="sendCode()">
-        <label for="email">Email address</label>
+        <label for="email"><app-icon name="mail" [size]="15" /> Email address</label>
         <input
           id="email"
           name="email"
@@ -18,7 +18,9 @@
           required
           [(ngModel)]="email"
         />
-        <button type="submit" [disabled]="busy() || !email.trim()">Send code</button>
+        <button type="submit" [disabled]="busy() || !email.trim()">
+          <app-icon name="send" /> Send code
+        </button>
       </form>
     }
 
@@ -46,7 +48,9 @@
           required
           [(ngModel)]="code"
         />
-        <button type="submit" [disabled]="busy() || code.trim().length !== 6">Verify</button>
+        <button type="submit" [disabled]="busy() || code.trim().length !== 6">
+          <app-icon name="log-in" /> Verify and log in
+        </button>
       </form>
 
       <div class="links">
@@ -84,7 +88,9 @@
           </label>
         </fieldset>
 
-        <button type="submit" [disabled]="busy() || !name.trim()">Create account</button>
+        <button type="submit" [disabled]="busy() || !name.trim()">
+          <app-icon name="check" /> Create account
+        </button>
       </form>
     }
   }

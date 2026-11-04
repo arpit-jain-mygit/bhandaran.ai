@@ -162,3 +162,22 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}

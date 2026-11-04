@@ -11,10 +11,11 @@ import { AuthService } from '../core/auth.service';
 import { Booking, BookingService, bookingStatusLabel } from '../core/booking.service';
 import { GrainLoader } from '../shared/grain-loader/grain-loader';
 import { WelcomeBanner } from '../shared/welcome-banner/welcome-banner';
+import { Icon } from '../shared/icon/icon';
 
 @Component({
   selector: 'app-renter-home',
-  imports: [RouterLink, DatePipe, GrainLoader, WelcomeBanner],
+  imports: [RouterLink, DatePipe, GrainLoader, WelcomeBanner, Icon],
   templateUrl: './renter-home.html',
   styleUrl: './renter-home.scss',
 })

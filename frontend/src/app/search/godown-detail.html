@@ -1,5 +1,9 @@
 <!-- One approved godown: photos and the facts a renter needs. -->
-<p><button type="button" class="back" (click)="back()">← Back to results</button></p>
+<p>
+  <button type="button" class="back" (click)="back()">
+    <app-icon name="arrow-left" [size]="16" /> Back to results
+  </button>
+</p>
 
 @if (loading()) {
   <p class="loading"><app-grain-loader [size]="28" label="Loading" /> Loading…</p>
@@ -7,8 +11,9 @@
   <p class="msg error" role="alert">{{ error() }}</p>
 } @else if (godown(); as g) {
   <h1>{{ g.name }}</h1>
-  <p class="muted">
-    {{ g.address }}, {{ g.city_name }}, {{ g.district_name }}, {{ g.state_name }} {{ g.pincode }}
+  <p class="muted address">
+    <app-icon name="map-pin" [size]="16" /> {{ g.address }}, {{ g.city_name }},
+    {{ g.district_name }}, {{ g.state_name }} {{ g.pincode }}
   </p>
 
   @if (g.photo_urls.length) {
@@ -35,7 +40,7 @@
       <dd>{{ g.stock_types.join(', ') }}</dd>
     </dl>
     <button type="button" disabled title="Booking arrives in the next milestones">
-      Booking coming soon
+      <app-icon name="calendar" /> Booking coming soon
     </button>
   </section>
 

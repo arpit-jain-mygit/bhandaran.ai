@@ -1,0 +1,7 @@
+// Keep icons aligned with the text next to them.
+:host {
+  display: inline-flex;
+  flex: none;
+  vertical-align: middle;
+  line-height: 0;
+}

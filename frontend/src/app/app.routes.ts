@@ -83,6 +83,9 @@ export const routes: Routes = [
     loadComponent: () => import('./renter/renter-home').then((m) => m.RenterHome),
   },
 
+  // "/admin" - admin home: the review queue.
+  { path: 'admin', pathMatch: 'full', redirectTo: 'admin/listings' },
+
   // "/admin/master-data" - manage lists (M1). Admins only.
   {
     path: 'admin/master-data',

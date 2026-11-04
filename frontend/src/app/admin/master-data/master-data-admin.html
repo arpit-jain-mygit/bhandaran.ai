@@ -30,23 +30,26 @@
   <div class="pickers">
     <label>
       State
-      <select name="state" [ngModel]="stateId()" (ngModelChange)="selectState($event)">
-        @for (s of states(); track s.id) {
-          <option [value]="s.id">{{ s.name }}</option>
-        }
-      </select>
+      <app-combobox
+        name="state"
+        placeholder="Type or select a state"
+        [options]="stateOptions()"
+        [ngModel]="stateId()"
+        (ngModelChange)="selectState($event)"
+      />
     </label>
 
     @if (tab() === 'cities') {
       <label>
         District
-        <select name="district" [ngModel]="districtId()" (ngModelChange)="selectDistrict($event)">
-          @for (d of districts(); track d.id) {
-            <option [value]="d.id">{{ d.name }}{{ d.is_active ? '' : ' (disabled)' }}</option>
-          } @empty {
-            <option value="">No districts - add one on the Districts tab</option>
-          }
-        </select>
+        <app-combobox
+          name="district"
+          placeholder="Type or select a district"
+          emptyText="No districts - add one on the Districts tab"
+          [options]="districtOptions()"
+          [ngModel]="districtId()"
+          (ngModelChange)="selectDistrict($event)"
+        />
       </label>
     }
   </div>

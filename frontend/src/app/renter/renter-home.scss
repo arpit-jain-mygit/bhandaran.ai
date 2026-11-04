@@ -82,3 +82,10 @@ button {
   border: 1px solid var(--bad);
   color: var(--bad);
 }
+
+h2,
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}

@@ -64,7 +64,9 @@
 
     @if (tab() === 'PENDING_REVIEW') {
       <div class="decide">
-        <button type="button" [disabled]="busy()" (click)="approve(warehouse)">Approve</button>
+        <button type="button" [disabled]="busy()" (click)="approve(warehouse)">
+          <app-icon name="check" /> Approve
+        </button>
         <input
           [name]="'reason-' + warehouse.id"
           placeholder="Reason to send back, e.g. photos are too dark"
@@ -77,7 +79,7 @@
           [disabled]="busy() || (reasons[warehouse.id] ?? '').trim().length < 3"
           (click)="reject(warehouse)"
         >
-          Send back
+          <app-icon name="x" /> Send back
         </button>
       </div>
     }

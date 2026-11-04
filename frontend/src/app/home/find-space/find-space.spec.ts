@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------
 // Tests for the "Find space" dropdowns: lists load from the API,
-// and choosing a state loads that state's cities.
+// and choosing a state loads that state's districts, then towns.
 // ---------------------------------------------------------------
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -37,10 +37,20 @@ describe('FindSpace', () => {
     httpMock.expectOne((r) => r.url === '/api/master/stock-types').flush([item('wheat', 'Wheat')]);
   }
 
-  /** Visible option texts of a <select>. */
-  function options(element: HTMLElement, name: string): string[] {
-    const select = element.querySelector(`select[name="${name}"]`) as HTMLSelectElement;
-    return Array.from(select.options).map((option) => option.textContent?.trim() ?? '');
+  /** Option labels of a type-or-select box (opens it to read them). */
+  function options(
+    element: HTMLElement,
+    name: string,
+    fixture: { detectChanges(): void },
+  ): string[] {
+    const input = element.querySelector(`app-combobox[name="${name}"] input`) as HTMLInputElement;
+    input.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    const items = element.querySelectorAll(`app-combobox[name="${name}"] li[role="option"]`);
+    const labels = Array.from(items).map((li) => li.textContent?.trim() ?? '');
+    input.dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+    return labels;
   }
 
   it('fills the dropdowns from master data', async () => {
@@ -50,9 +60,9 @@ describe('FindSpace', () => {
     await fixture.whenStable();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(options(element, 'state')).toContain('Madhya Pradesh');
-    expect(options(element, 'storageType')).toContain('Cold storage');
-    expect(options(element, 'stockType')).toContain('Wheat');
+    expect(options(element, 'state', fixture)).toContain('Madhya Pradesh');
+    expect(options(element, 'storageType', fixture)).toContain('Cold storage');
+    expect(options(element, 'stockType', fixture)).toContain('Wheat');
   });
 
   it('cascades state -> district -> city / town', async () => {
@@ -71,7 +81,8 @@ describe('FindSpace', () => {
     expect(districts.request.params.get('state_id')).toBe('mp');
     districts.flush([{ id: 'ind-d', state_id: 'mp', name: 'Indore', is_active: true }]);
     await fixture.whenStable();
-    expect(options(fixture.nativeElement, 'district')).toContain('Indore');
+    fixture.detectChanges();
+    expect(options(fixture.nativeElement, 'district', fixture)).toContain('Indore');
 
     // User picks the "Indore" district -> its towns load.
     form.onDistrictChange('ind-d');
@@ -81,7 +92,8 @@ describe('FindSpace', () => {
       { id: 'mhow', district_id: 'ind-d', state_id: 'mp', name: 'Mhow', is_active: true },
     ]);
     await fixture.whenStable();
-    expect(options(fixture.nativeElement, 'city')).toContain('Mhow');
+    fixture.detectChanges();
+    expect(options(fixture.nativeElement, 'city', fixture)).toContain('Mhow');
   });
 
   it('clears district and town when the state changes', async () => {

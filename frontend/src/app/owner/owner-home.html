@@ -8,13 +8,13 @@
 />
 
 <section class="card">
-  <h2>My godowns</h2>
+  <h2><app-icon name="warehouse" /> My godowns</h2>
   <p class="muted small">Describe your storage space, add photos, and send it for review.</p>
   <a class="button" routerLink="/owner/warehouses">Manage godowns</a>
 </section>
 
 <section class="card">
-  <h2>Bookings</h2>
+  <h2><app-icon name="clipboard" /> Bookings</h2>
   <p class="muted small">Record deals made in person or by phone, and see who has booked space.</p>
   <a class="button" routerLink="/owner/bookings">Open bookings</a>
 </section>
@@ -22,14 +22,16 @@
 <section class="card">
   <div class="row">
     <div>
-      <h2>Invite a renter <span class="muted optional">(optional)</span></h2>
+      <h2>
+        <app-icon name="user-plus" /> Invite a renter <span class="muted optional">(optional)</span>
+      </h2>
       <p class="muted small">
         Add a renter you already work with, so they can see their stock here.
       </p>
     </div>
     @if (!showInvite()) {
       <button type="button" class="secondary" (click)="showInvite.set(true)">
-        Invite a renter
+        <app-icon name="user-plus" /> Invite a renter
       </button>
     }
   </div>
@@ -57,7 +59,7 @@
       />
 
       <button type="submit" [disabled]="busy() || !renterEmail.trim() || !renterName.trim()">
-        Send invite
+        <app-icon name="send" /> Send invite
       </button>
     </form>
 

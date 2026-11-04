@@ -8,7 +8,7 @@
 />
 
 <section class="bookings">
-  <h2>My bookings</h2>
+  <h2><app-icon name="clipboard" /> My bookings</h2>
 
   @if (loading()) {
     <p class="loading"><app-grain-loader [size]="24" label="Loading bookings" /> Loading…</p>
@@ -40,7 +40,9 @@
               Please confirm by {{ b.confirmation_due_at | date: 'd MMM y' }}
             </p>
           }
-          <button type="button" [disabled]="busy()" (click)="confirm(b)">Confirm booking</button>
+          <button type="button" [disabled]="busy()" (click)="confirm(b)">
+            <app-icon name="check" /> Confirm booking
+          </button>
         </div>
       }
     </article>

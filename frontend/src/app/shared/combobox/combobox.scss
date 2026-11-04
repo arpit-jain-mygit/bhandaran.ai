@@ -1,0 +1,111 @@
+// Combobox. Colours come from styles.scss tokens.
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.combo {
+  position: relative;
+}
+
+input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 0.5rem 4.2rem 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-overflow: ellipsis;
+
+  &:focus {
+    outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Small round buttons inside the right edge of the box.
+.clear,
+.chevron {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--muted) 15%, transparent);
+  }
+}
+
+.chevron {
+  right: 6px;
+}
+
+.clear {
+  right: 36px;
+}
+
+.open .chevron {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+ul {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+}
+
+li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 40px; // easy to tap on phones
+  padding: 0 0.6rem;
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+
+  &.active {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  &[aria-selected='true'] {
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  &.empty {
+    color: var(--muted);
+    cursor: default;
+  }
+}

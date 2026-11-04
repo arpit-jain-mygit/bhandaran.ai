@@ -50,11 +50,11 @@
             <span class="muted">{{ s.min }} - {{ s.max }}</span>
           }
           @case ('choice') {
-            <select [name]="s.key" [(ngModel)]="draft[s.key]">
-              @for (c of s.choices; track c) {
-                <option [value]="c">{{ c }}</option>
-              }
-            </select>
+            <app-combobox
+              [name]="s.key"
+              [options]="choiceOptions(s.choices)"
+              [(ngModel)]="draft[s.key]"
+            />
           }
         }
 
@@ -135,11 +135,11 @@
                     />
                   }
                   @case ('choice') {
-                    <select [name]="'owner-' + row.key" [(ngModel)]="ownerDraft[row.key]">
-                      @for (c of r?.choices ?? []; track c) {
-                        <option [value]="c">{{ c }}</option>
-                      }
-                    </select>
+                    <app-combobox
+                      [name]="'owner-' + row.key"
+                      [options]="choiceOptions(r?.choices)"
+                      [(ngModel)]="ownerDraft[row.key]"
+                    />
                   }
                 }
               </td>

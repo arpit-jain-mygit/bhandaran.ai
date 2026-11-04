@@ -1,7 +1,7 @@
 <!-- My godowns: each listing, its status, and what it still needs. -->
 <header class="head">
   <h1>My godowns</h1>
-  <a class="button" routerLink="/owner/warehouses/new">Add a godown</a>
+  <a class="button" routerLink="/owner/warehouses/new"><app-icon name="plus" /> Add a godown</a>
 </header>
 
 @if (loading()) {
@@ -19,7 +19,8 @@
     <a class="card" [routerLink]="['/owner/warehouses', warehouse.id]">
       <h2>{{ warehouse.name }}</h2>
       <p class="muted small">
-        {{ warehouse.city_name }} · {{ warehouse.capacity }} {{ warehouse.unit_name }}
+        <app-icon name="map-pin" [size]="14" /> {{ warehouse.city_name }} · {{ warehouse.capacity }}
+        {{ warehouse.unit_name }}
       </p>
       <p
         class="status"

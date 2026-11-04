@@ -6,18 +6,20 @@
 // Choosing a level loads the next one and resets everything below.
 // "Search" (M7) opens /search with the choices in the URL.
 // ---------------------------------------------------------------
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable, finalize, forkJoin } from 'rxjs';
 
 import { apiErrorMessage } from '../../core/api-error';
 import { City, District, LookupItem, MasterDataService } from '../../core/master-data.service';
+import { Combobox, optionsFrom } from '../../shared/combobox/combobox';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
+import { Icon } from '../../shared/icon/icon';
 
 @Component({
   selector: 'app-find-space',
-  imports: [FormsModule, GrainLoader],
+  imports: [FormsModule, GrainLoader, Combobox, Icon],
   templateUrl: './find-space.html',
   styleUrl: './find-space.scss',
 })
@@ -32,6 +34,13 @@ export class FindSpace implements OnInit {
   protected readonly storageTypes = signal<LookupItem[]>([]);
   protected readonly stockTypes = signal<LookupItem[]>([]);
   protected readonly error = signal('');
+
+  // Options for the type-or-select boxes.
+  protected readonly stateOptions = computed(() => optionsFrom(this.states()));
+  protected readonly districtOptions = computed(() => optionsFrom(this.districts()));
+  protected readonly cityOptions = computed(() => optionsFrom(this.cities()));
+  protected readonly storageOptions = computed(() => optionsFrom(this.storageTypes()));
+  protected readonly stockOptions = computed(() => optionsFrom(this.stockTypes()));
 
   // How many list requests are still running (> 0 shows the spinner).
   protected readonly pending = signal(0);

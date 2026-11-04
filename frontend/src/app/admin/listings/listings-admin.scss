@@ -145,3 +145,9 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}

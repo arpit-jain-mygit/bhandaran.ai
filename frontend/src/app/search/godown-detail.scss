@@ -86,3 +86,11 @@ button.back {
   font-weight: 400;
   cursor: pointer;
 }
+
+.address,
+button.back,
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}

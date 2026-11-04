@@ -1,19 +1,29 @@
-// Shell layout: full-width header, centred page content.
+// Shell layout: sticky header, centred page content. On phones the
+// nav becomes a drop-down panel opened by the menu button.
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.7rem 1.25rem;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
 
 .brand {
-  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--text);
   text-decoration: none;
+
+  app-icon {
+    color: var(--grain-wheat);
+  }
 }
 
 .dot {
@@ -22,28 +32,209 @@
 
 .tagline {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .page {
-  padding: 1.5rem 16px;
-  max-width: 960px;
+  padding: 1.5rem 16px 3rem;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-// Navigation links, pushed to the right.
+// ---------- nav (wide screens) ----------
+
 .nav {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.25rem;
   margin-left: auto;
 
-  a {
+  > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 40px;
+    padding: 0 0.7rem;
+    border-radius: 8px;
     color: var(--muted);
     text-decoration: none;
+
+    &:hover {
+      background: color-mix(in srgb, var(--muted) 10%, transparent);
+      color: var(--text);
+    }
 
     &.active {
       color: var(--accent);
       font-weight: 600;
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
     }
+  }
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--border);
+}
+
+// Profile chip: initial in a circle + name.
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0 0.6rem 0 0.25rem;
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+
+  &:hover,
+  &.active {
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--grain-wheat);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.who {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+// Log out: quiet outline button; turns red on hover so it's clear.
+.logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 38px;
+  padding: 0 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--bad);
+    color: var(--bad);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+}
+
+// Log in: the one bright button in the header.
+.login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  margin-left: 0.25rem;
+  padding: 0 1rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.menu-button {
+  display: none;
+  margin-left: auto;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+// ---------- phones: menu button + drop-down panel ----------
+
+@media (max-width: 760px) {
+  .tagline {
+    display: none;
+  }
+
+  .menu-button {
+    display: inline-flex;
+  }
+
+  .nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.15rem;
+    padding: 0.5rem 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 12%);
+
+    &.open {
+      display: flex;
+    }
+
+    > a {
+      min-height: 46px;
+      font-size: 1rem;
+    }
+  }
+
+  .account {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0;
+    padding: 0.6rem 0 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .chip {
+    min-height: 46px;
+    border-radius: 8px;
+  }
+
+  .who {
+    max-width: none;
+  }
+
+  .logout,
+  .login {
+    justify-content: center;
+    min-height: 46px;
+    margin: 0;
+  }
+
+  .page {
+    padding: 1rem 16px 2.5rem;
   }
 }

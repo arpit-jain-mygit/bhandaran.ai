@@ -6,9 +6,11 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
+import { Icon } from '../../shared/icon/icon';
+
 @Component({
   selector: 'app-admin-header',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, Icon],
   templateUrl: './admin-header.html',
   styleUrl: './admin-header.scss',
 })

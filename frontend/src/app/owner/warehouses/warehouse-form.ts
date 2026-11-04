@@ -10,11 +10,13 @@ import { concatMap, forkJoin, of } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { City, LookupItem, MasterDataService } from '../../core/master-data.service';
 import { Warehouse, WarehouseInput, WarehouseService } from '../../core/warehouse.service';
+import { ComboOption, Combobox, optionsFrom } from '../../shared/combobox/combobox';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
+import { Icon } from '../../shared/icon/icon';
 
 @Component({
   selector: 'app-warehouse-form',
-  imports: [FormsModule, RouterLink, GrainLoader],
+  imports: [FormsModule, RouterLink, GrainLoader, Combobox, Icon],
   templateUrl: './warehouse-form.html',
   styleUrl: './warehouse-form.scss',
 })
@@ -34,6 +36,9 @@ export class WarehouseForm implements OnInit {
   protected units: LookupItem[] = [];
   protected storageTypes: LookupItem[] = [];
   protected stockTypes: LookupItem[] = [];
+  protected cityOptions: ComboOption[] = [];
+  protected unitOptions: ComboOption[] = [];
+  protected storageOptions: ComboOption[] = [];
 
   // The form fields. Stock types are a set of checked ids.
   protected name = '';
@@ -61,6 +66,9 @@ export class WarehouseForm implements OnInit {
         this.units = lookups.units;
         this.storageTypes = lookups.storage;
         this.stockTypes = lookups.stock;
+        this.cityOptions = optionsFrom(lookups.cities);
+        this.unitOptions = optionsFrom(lookups.units);
+        this.storageOptions = optionsFrom(lookups.storage);
         if (this.id) {
           this.load(this.id);
         } else {

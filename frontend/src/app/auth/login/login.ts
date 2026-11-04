@@ -12,12 +12,13 @@ import { Observable } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { AuthService, User } from '../../core/auth.service';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
+import { Icon } from '../../shared/icon/icon';
 
 type Step = 'email' | 'code' | 'signup';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, GrainLoader],
+  imports: [FormsModule, GrainLoader, Icon],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

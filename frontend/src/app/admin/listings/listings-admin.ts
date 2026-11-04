@@ -11,10 +11,11 @@ import { LookupItem, MasterDataService } from '../../core/master-data.service';
 import { Warehouse } from '../../core/warehouse.service';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 import { AdminHeader } from '../admin-header/admin-header';
+import { Icon } from '../../shared/icon/icon';
 
 @Component({
   selector: 'app-listings-admin',
-  imports: [FormsModule, GrainLoader, AdminHeader],
+  imports: [FormsModule, GrainLoader, AdminHeader, Icon],
   templateUrl: './listings-admin.html',
   styleUrl: './listings-admin.scss',
 })

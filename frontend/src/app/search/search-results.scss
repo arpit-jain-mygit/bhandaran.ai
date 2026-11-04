@@ -77,3 +77,16 @@ h2 {
   border: 1px solid var(--bad);
   color: var(--bad);
 }
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+}
+
+.small {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}

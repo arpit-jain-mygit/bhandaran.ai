@@ -8,10 +8,11 @@ import { RouterLink } from '@angular/router';
 import { apiErrorMessage } from '../../core/api-error';
 import { Warehouse, WarehouseService } from '../../core/warehouse.service';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
+import { Icon } from '../../shared/icon/icon';
 
 @Component({
   selector: 'app-warehouse-list',
-  imports: [RouterLink, GrainLoader],
+  imports: [RouterLink, GrainLoader, Icon],
   templateUrl: './warehouse-list.html',
   styleUrl: './warehouse-list.scss',
 })

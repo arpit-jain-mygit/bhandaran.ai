@@ -4,19 +4,21 @@
 @if (loading()) {
   <p class="loading"><app-grain-loader [size]="28" label="Loading your profile" /> Loading…</p>
 } @else if (profile(); as me) {
-  <p class="muted">{{ me.email }}</p>
+  <p class="muted email"><app-icon name="mail" [size]="15" /> {{ me.email }}</p>
 
   <form class="card" (ngSubmit)="save()">
-    <label for="name">Name</label>
+    <label for="name"><app-icon name="user" [size]="14" /> Name</label>
     <input id="name" name="name" autocomplete="name" required maxlength="100" [(ngModel)]="name" />
 
-    <label for="city">City or town</label>
-    <select id="city" name="city" [(ngModel)]="cityId">
-      <option value="">Not set</option>
-      @for (city of cities(); track city.id) {
-        <option [value]="city.id">{{ city.name }}</option>
-      }
-    </select>
+    <label for="city"><app-icon name="map-pin" [size]="14" /> City or town</label>
+    <app-combobox
+      inputId="city"
+      name="city"
+      placeholder="Type or select your city / town"
+      [allowClear]="true"
+      [options]="cityOptions()"
+      [(ngModel)]="cityId"
+    />
 
     <label for="gst">GST number <span class="muted">(optional)</span></label>
     <input
@@ -28,7 +30,9 @@
       [(ngModel)]="gst"
     />
 
-    <button type="submit" [disabled]="busy() || !name.trim()">Save profile</button>
+    <button type="submit" [disabled]="busy() || !name.trim()">
+      <app-icon name="save" /> Save profile
+    </button>
   </form>
 }
 

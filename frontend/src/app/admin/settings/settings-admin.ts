@@ -18,6 +18,7 @@ import {
   SettingValue,
   SettingsService,
 } from '../../core/settings.service';
+import { ComboOption, Combobox } from '../../shared/combobox/combobox';
 import { GrainLoader } from '../../shared/grain-loader/grain-loader';
 import { AdminHeader } from '../admin-header/admin-header';
 
@@ -25,7 +26,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 @Component({
   selector: 'app-settings-admin',
-  imports: [FormsModule, GrainLoader, AdminHeader],
+  imports: [FormsModule, GrainLoader, AdminHeader, Combobox],
   templateUrl: './settings-admin.html',
   styleUrl: './settings-admin.scss',
 })
@@ -175,5 +176,10 @@ export class SettingsAdmin implements OnInit {
   private clearMessages(): void {
     this.error.set('');
     this.notice.set('');
+  }
+
+  /** A setting's choices as type-or-select options. */
+  protected choiceOptions(choices: readonly string[] | undefined): ComboOption[] {
+    return (choices ?? []).map((choice) => ({ value: choice, label: choice }));
   }
 }

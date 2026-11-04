@@ -138,3 +138,16 @@ fieldset {
   color: var(--bad);
   margin: 0.75rem 0 0;
 }
+
+label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+button[type='submit'] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}

@@ -1,5 +1,9 @@
 <!-- Add or edit a godown: details, stock types, photos, then submit. -->
-<p><a routerLink="/owner/warehouses">← My godowns</a></p>
+<p>
+  <a class="back" routerLink="/owner/warehouses"
+    ><app-icon name="arrow-left" [size]="16" /> My godowns</a
+  >
+</p>
 <h1>{{ id ? 'Edit godown' : 'Add a godown' }}</h1>
 
 @if (loading()) {
@@ -42,12 +46,14 @@
     <div class="row">
       <div>
         <label for="city">City or town</label>
-        <select id="city" name="city" required [disabled]="readOnly()" [(ngModel)]="cityId">
-          <option value="" disabled>Pick a city</option>
-          @for (city of cities; track city.id) {
-            <option [value]="city.id">{{ city.name }}</option>
-          }
-        </select>
+        <app-combobox
+          inputId="city"
+          name="city"
+          placeholder="Type or select a city"
+          [options]="cityOptions"
+          [disabled]="readOnly()"
+          [(ngModel)]="cityId"
+        />
       </div>
       <div>
         <label for="pincode">Pincode</label>
@@ -78,28 +84,26 @@
       </div>
       <div>
         <label for="unit">Unit</label>
-        <select id="unit" name="unit" required [disabled]="readOnly()" [(ngModel)]="unitId">
-          <option value="" disabled>Pick a unit</option>
-          @for (unit of units; track unit.id) {
-            <option [value]="unit.id">{{ unit.name }}</option>
-          }
-        </select>
+        <app-combobox
+          inputId="unit"
+          name="unit"
+          placeholder="Type or select a unit"
+          [options]="unitOptions"
+          [disabled]="readOnly()"
+          [(ngModel)]="unitId"
+        />
       </div>
     </div>
 
     <label for="storage">Storage type</label>
-    <select
-      id="storage"
+    <app-combobox
+      inputId="storage"
       name="storage"
-      required
+      placeholder="Type or select a storage type"
+      [options]="storageOptions"
       [disabled]="readOnly()"
       [(ngModel)]="storageTypeId"
-    >
-      <option value="" disabled>Pick a storage type</option>
-      @for (storage of storageTypes; track storage.id) {
-        <option [value]="storage.id">{{ storage.name }}</option>
-      }
-    </select>
+    />
 
     <fieldset [disabled]="readOnly()">
       <legend>Stock types you accept</legend>
@@ -129,13 +133,15 @@
       @if (formProblems().length) {
         <p class="muted small">To save, add {{ formProblems().join(', ') }}.</p>
       }
-      <button type="submit" [disabled]="busy() || formProblems().length > 0">Save draft</button>
+      <button type="submit" [disabled]="busy() || formProblems().length > 0">
+        <app-icon name="save" /> Save draft
+      </button>
     }
   </form>
 
   @if (id) {
     <section class="card">
-      <h2>Photos</h2>
+      <h2><app-icon name="image" /> Photos</h2>
       <p class="muted small">JPG, PNG or WebP, up to 5 MB each. Add at least one.</p>
 
       <div class="photos">
@@ -147,7 +153,9 @@
               <span class="pending">Uploading…</span>
             }
             @if (!readOnly()) {
-              <button type="button" class="link" (click)="removePhoto(photo.id)">Remove</button>
+              <button type="button" class="link" (click)="removePhoto(photo.id)">
+                <app-icon name="trash" [size]="14" /> Remove
+              </button>
             }
           </figure>
         }
@@ -164,7 +172,7 @@
     </section>
 
     <section class="card">
-      <h2>Submit for review</h2>
+      <h2><app-icon name="send" /> Submit for review</h2>
       @if (warehouse()?.missing?.length) {
         <p class="muted small">Still needed: {{ warehouse()?.missing?.join(', ') }}</p>
       }

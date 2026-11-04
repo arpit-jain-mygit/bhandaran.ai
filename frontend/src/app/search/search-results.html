@@ -1,5 +1,7 @@
 <!-- Search results: approved godowns, cheapest first. -->
-<p><a routerLink="/">← Change search</a></p>
+<p>
+  <a class="back" routerLink="/"><app-icon name="arrow-left" [size]="16" /> Change search</a>
+</p>
 <h1>Storage space</h1>
 
 @if (loading()) {
@@ -22,8 +24,14 @@
       }
       <div class="body">
         <h2>{{ row.name }}</h2>
-        <p class="muted small">{{ row.city_name }}, {{ row.district_name }} · {{ row.pincode }}</p>
-        <p class="small">{{ row.storage_type_name }} · {{ row.stock_types.join(', ') }}</p>
+        <p class="muted small">
+          <app-icon name="map-pin" [size]="14" /> {{ row.city_name }}, {{ row.district_name }} ·
+          {{ row.pincode }}
+        </p>
+        <p class="small">
+          <app-icon name="package" [size]="14" /> {{ row.storage_type_name }} ·
+          {{ row.stock_types.join(', ') }}
+        </p>
         <p class="facts">
           <span
             ><b>₹{{ row.price_per_unit_month }}</b> per {{ row.unit_name }} / month</span

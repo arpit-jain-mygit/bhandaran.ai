@@ -1,0 +1,67 @@
+<!-- Text box + list. The list closes on blur; option clicks use
+     mousedown so they land before the box loses focus. -->
+<div class="combo" [class.open]="open()" [class.disabled]="disabled()">
+  <input
+    [id]="inputId()"
+    type="text"
+    role="combobox"
+    autocomplete="off"
+    aria-autocomplete="list"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="listId"
+    [attr.aria-activedescendant]="open() && shown().length ? listId + '-' + active() : null"
+    [placeholder]="placeholder()"
+    [value]="text()"
+    [disabled]="disabled()"
+    (input)="onInput($any($event.target).value)"
+    (focus)="openList()"
+    (click)="openList()"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()"
+  />
+
+  @if (allowClear() && value() && !disabled()) {
+    <button
+      type="button"
+      class="clear"
+      aria-label="Clear"
+      (mousedown)="$event.preventDefault()"
+      (click)="clear()"
+    >
+      <app-icon name="x" [size]="16" />
+    </button>
+  }
+  <button
+    type="button"
+    class="chevron"
+    tabindex="-1"
+    aria-label="Show options"
+    [disabled]="disabled()"
+    (mousedown)="$event.preventDefault()"
+    (click)="toggle()"
+  >
+    <app-icon name="chevron-down" [size]="16" />
+  </button>
+
+  @if (open()) {
+    <ul role="listbox" [id]="listId">
+      @for (option of shown(); track option.value; let i = $index) {
+        <li
+          role="option"
+          [id]="listId + '-' + i"
+          [attr.aria-selected]="option.value === value()"
+          [class.active]="i === active()"
+          (mousedown)="$event.preventDefault(); choose(option)"
+          (mouseenter)="active.set(i)"
+        >
+          <span>{{ option.label }}</span>
+          @if (option.value === value()) {
+            <app-icon name="check" [size]="14" />
+          }
+        </li>
+      } @empty {
+        <li class="empty" role="presentation">{{ emptyText() }}</li>
+      }
+    </ul>
+  }
+</div>

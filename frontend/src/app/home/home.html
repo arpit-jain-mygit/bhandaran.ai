@@ -1,32 +1,7 @@
-<!-- Home page: "Find space" dropdowns + system status card. -->
-<div class="stack">
-  <app-find-space />
+<!-- Home page: heading + search. -->
+<section class="intro">
+  <h1>Godown space near you</h1>
+  <p class="muted">Search approved godowns by place, storage type and price.</p>
+</section>
 
-  <section class="card">
-    <h2>System status</h2>
-
-    @let s = state();
-
-    @if (s.kind === 'loading') {
-      <!-- Waiting for the API to answer -->
-      <p class="muted loading" data-testid="status">
-        <app-grain-loader [size]="28" label="Checking API" /> Checking API…
-      </p>
-    } @else if (s.kind === 'loaded') {
-      <!-- API answered: show API + database status -->
-      <dl>
-        <dt>API</dt>
-        <dd [class]="s.health.status" data-testid="status">{{ s.health.status }}</dd>
-        <dt>Database</dt>
-        <dd [class]="s.health.database">{{ s.health.database }} ({{ s.health.db_mode }})</dd>
-        <dt>Version</dt>
-        <dd>{{ s.health.version }}</dd>
-      </dl>
-    } @else {
-      <!-- API did not answer at all -->
-      <p class="unreachable" data-testid="status">
-        API unreachable - is FastAPI running on port 8000?
-      </p>
-    }
-  </section>
-</div>
+<app-find-space />
